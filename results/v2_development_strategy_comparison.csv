@@ -1,0 +1,5 @@
+Strategy,Description,Pros,Cons
+A,Real only,No synthetic bias,Limited data
+B,Real + all synthetic V2,Maximum data volume,Synthetic data will dominate
+C,Real + controlled synthetic subset,Balanced approach,Throws away some synthetic data
+D,Weighted real + synthetic training,Uses all data without overwhelming real signal,Requires careful weighting implementation

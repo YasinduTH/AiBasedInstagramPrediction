@@ -1,0 +1,10 @@
+Metric,Value
+Real Observations Used,2000
+Synthetic Observations Used,100000
+Training Rows,81600
+Testing Rows,20400
+Original Features Count,6
+Final Encoded Features Count,1517
+TF-IDF Features Count,1500
+Numeric Features Count,11
+OHE Features Count,6

@@ -1,0 +1,13 @@
+{
+    "model_name": "Hybrid Stacking",
+    "training_strategy": "Strategy A",
+    "real_training_records": 1600,
+    "synthetic_training_records": 0,
+    "feature_groups": "Text + Hashtags + Time + Metadata",
+    "random_state": 42,
+    "cv_configuration": "StratifiedKFold(n_splits=5)",
+    "real_test_metrics": {
+        "accuracy": 0.465,
+        "weighted_f1": 0.45473431969480005
+    }
+}

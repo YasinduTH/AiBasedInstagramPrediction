@@ -1,0 +1,9 @@
+Audit Metric,Result
+Total images scanned,34927.0
+Dataset 1 images count,20515.0
+Dataset 2 images count,14412.0
+Readable images count,34927.0
+Unreadable images count,0.0
+Duplicate images count,68.0
+Image format distribution (% JPEG),100.0
+Perfect caption-to-image matches,34927.0

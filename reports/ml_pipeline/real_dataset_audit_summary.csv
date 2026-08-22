@@ -1,0 +1,7 @@
+Dataset Name,Total Records,Total Columns,Duplicate Rows,Missing Cells,Missing Cells (%),Has Caption Text,Has Hashtag Text,Has Engagement Info
+Instagram - Posts.csv,1000,40,0,11433,28.58,Yes,Yes,Yes
+Instagram - Posts2.csv,1000,41,0,12793,31.2,Yes,Yes,Yes
+instagram_analytics.csv,29999,23,0,0,0.0,No,No,Yes
+instagram_reach.csv,100,8,0,6,0.75,Yes,Yes,Yes
+instagram_data/captions_csv.csv,20515,3,0,3415,5.55,Yes,No,No
+instagram_data2/captions_csv2.csv,14412,3,0,0,0.0,Yes,No,No

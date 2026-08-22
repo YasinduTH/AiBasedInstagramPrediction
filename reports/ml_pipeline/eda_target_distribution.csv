@@ -1,0 +1,7 @@
+Performance_Class,Count,Percentage (%),Dataset
+Low,667,33.35,real
+High,667,33.35,real
+Medium,666,33.3,real
+High,33999,34.0,synthetic
+Low,33003,33.0,synthetic
+Medium,32998,33.0,synthetic

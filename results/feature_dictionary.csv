@@ -1,0 +1,17 @@
+Feature,Feature_Group,Data_Type,Transformation,Primary_or_Secondary,Leakage_Risk,Included
+caption,Text,text,TF-IDF Vectorizer,Primary,Low,Yes
+hashtags,Hashtag,text,TF-IDF Vectorizer,Primary,Low,Yes
+caption_length,Text,numeric,Median Imputer,Primary,Low,Yes
+word_count,Text,numeric,Median Imputer,Primary,Low,Yes
+hashtag_count,Hashtag,numeric,Median Imputer,Primary,Low,Yes
+posting_hour,Time,numeric,Trigonometric cyclical,Primary,Low,Yes
+day_of_week,Time,categorical,Trigonometric cyclical,Primary,Low,Yes
+is_weekend,Time,numeric,Float cast,Primary,Low,Yes
+follower_count,Metadata,numeric,Log1p transformation,Primary,Low,Yes
+verified_status,Metadata,boolean,Float cast,Primary,Low,Yes
+sponsored,Metadata,boolean,Float cast,Primary,Low,Yes
+media_type,Metadata,categorical,One-Hot encoding,Primary,Low,Yes
+post_id,Identifier,numeric,Excluded,Primary,High,No
+likes,Outcome,numeric,Excluded,Primary,Critical,No
+comments,Outcome,numeric,Excluded,Primary,Critical,No
+engagement_rate,Outcome,numeric,Excluded,Primary,Critical,No

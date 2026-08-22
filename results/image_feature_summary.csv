@@ -1,0 +1,13 @@
+Feature,Data_Type,Missing_Count,Missing_Percentage (%)
+image_width,numeric,0,0.0
+image_height,numeric,0,0.0
+aspect_ratio,numeric,0,0.0
+brightness,numeric,34927,100.0
+contrast,numeric,34927,100.0
+saturation,numeric,34927,100.0
+sharpness,numeric,34927,100.0
+colorfulness,numeric,34927,100.0
+face_count,numeric,34927,100.0
+text_in_image,numeric,34927,100.0
+visual_complexity,numeric,34927,100.0
+estimated_image_quality,numeric,34927,100.0

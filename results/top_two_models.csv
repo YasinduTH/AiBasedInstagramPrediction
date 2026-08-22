@@ -1,0 +1,3 @@
+Model,Best Params,Mean CV Weighted F1,Rank
+Random Forest,"{'classifier__n_estimators': 100, 'classifier__min_samples_split': 5, 'classifier__max_depth': 10}",0.48162041531706634,1
+HistGradientBoosting,"{'classifier__max_iter': 100, 'classifier__max_depth': 10, 'classifier__learning_rate': 0.01}",0.4664088830117361,2

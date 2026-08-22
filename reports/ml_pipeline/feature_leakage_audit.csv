@@ -1,0 +1,18 @@
+Feature,Leakage_Risk,Decision,Reason
+caption,None,Retain,Available pre-publication
+hashtags,None,Retain,Available pre-publication
+caption_length,None,Retain,Derived from caption
+word_count,None,Retain,Derived from caption
+hashtag_count,None,Retain,Derived from hashtags
+posting_hour,None,Retain,Scheduled posting time
+day_of_week,None,Retain,Scheduled posting day
+is_weekend,None,Retain,Scheduled posting day
+follower_count,None,Retain,Historical user metadata
+posts_count,None,Retain,Historical user metadata
+verified_status,None,Retain,Historical user metadata
+sponsored,None,Retain,Pre-publication setting
+media_type,None,Retain,Pre-publication setting
+post_id,High,Exclude from predictors,Database identifier key
+likes,Critical Target Leak,Exclude from predictors,Post-publication outcome
+comments,Critical Target Leak,Exclude from predictors,Post-publication outcome
+engagement_rate,Critical Target Leak,Exclude from predictors,Post-publication outcome

@@ -1,0 +1,55 @@
+# DATASETS - DO NOT UPLOAD
+datasets/raw/
+datasets/processed/
+datasets/Synthetic/
+
+# PYTHON
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# VIRTUAL ENVIRONMENTS
+venv/
+.venv/
+env/
+ENV/
+
+# JUPYTER
+.ipynb_checkpoints/
+
+# SECRETS
+.env
+.env.*
+!.env.example
+
+# FIREBASE CREDENTIALS
+serviceAccountKey.json
+firebase-adminsdk*.json
+*-firebase-adminsdk-*.json
+
+# TEMPORARY UPLOADS
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+uploads/
+tmp/
+temp/
+
+# GENERATED PRODUCTION OUTPUTS
+results/production/
+results/real_target/
+results/real_multimodal_evaluation/
+results/deep_image_features/
+
+# LOGS
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

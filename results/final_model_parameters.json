@@ -1,0 +1,9 @@
+{
+    "selected_model": "Hybrid Stacking Model",
+    "hybrid_improved_performance": true,
+    "top_one_base_estimator": "Logistic Regression",
+    "top_two_base_estimator": "Linear SVM",
+    "meta_classifier": "LogisticRegression(random_state=42)",
+    "real_data_accuracy": 0.433,
+    "real_data_weighted_f1": 0.4364
+}

@@ -1,0 +1,4 @@
+Model,Type,Accuracy,Precision,Recall,Weighted_F1
+Logistic Regression,Individual,0.4495,0.4447,0.4495,0.4443
+Linear SVM,Individual,0.45,0.444,0.45,0.442
+Logistic Regression + Linear SVM,Hybrid Stacking,0.4519,0.4469,0.4519,0.4464

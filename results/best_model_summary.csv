@@ -1,0 +1,2 @@
+model_name,random_state,training_observations,feature_count,target_classes,real_test_accuracy,real_test_f1_weighted,preprocessing_reference
+Logistic Regression,42,81600,1517,"['Low', 'Medium', 'High']",0.4304,0.4318,models/preprocessing/preprocessor.pkl

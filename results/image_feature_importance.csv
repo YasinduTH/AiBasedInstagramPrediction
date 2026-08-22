@@ -1,0 +1,13 @@
+Feature,Importance
+image_width,N/A (Stacking Ensemble limitation)
+image_height,N/A (Stacking Ensemble limitation)
+aspect_ratio,N/A (Stacking Ensemble limitation)
+brightness,N/A (Stacking Ensemble limitation)
+contrast,N/A (Stacking Ensemble limitation)
+saturation,N/A (Stacking Ensemble limitation)
+sharpness,N/A (Stacking Ensemble limitation)
+colorfulness,N/A (Stacking Ensemble limitation)
+face_count,N/A (Stacking Ensemble limitation)
+text_in_image,N/A (Stacking Ensemble limitation)
+visual_complexity,N/A (Stacking Ensemble limitation)
+estimated_image_quality,N/A (Stacking Ensemble limitation)

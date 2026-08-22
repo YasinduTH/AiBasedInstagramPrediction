@@ -1,0 +1,6 @@
+{
+    "Real_Observations": 2000,
+    "Synthetic_Observations": 100000,
+    "Total_Variables": 16,
+    "Imbalance_Ratio_Real": 1.0015
+}

@@ -1,0 +1,53 @@
+{
+    "project_name": "AI-Based Instagram Engagement Prediction and Content Optimization System",
+    "dataset_name": "Synthetic V2",
+    "dataset_path": "d:\\newwwwwwww\\AiBasedInstagramPrediction\\datasets\\Synthetic\\synthetic_instagram_engagement_dataset_v2.csv",
+    "dataset_rows": 100000,
+    "dataset_columns": 62,
+    "target_column": "performance_class",
+    "target_classes": [
+        "High",
+        "Low",
+        "Medium"
+    ],
+    "model_name": "HistGradientBoostingClassifier",
+    "model_parameters": {
+        "learning_rate": 0.08,
+        "max_iter": 300,
+        "max_leaf_nodes": 63,
+        "min_samples_leaf": 20,
+        "l2_regularization": 0.1,
+        "random_state": 42
+    },
+    "training_rows": 80000,
+    "testing_rows": 20000,
+    "feature_count": 56,
+    "numeric_feature_count": 51,
+    "categorical_feature_count": 5,
+    "holdout_accuracy": 0.90965,
+    "weighted_precision": 0.9107026696982643,
+    "weighted_recall": 0.90965,
+    "weighted_f1": 0.9099958211843674,
+    "macro_f1": 0.9113790531260024,
+    "cv_mean_accuracy": 0.90807,
+    "cv_std_accuracy": 0.0020766800427605868,
+    "cv_mean_weighted_f1": 0.9084025600843673,
+    "cv_std_weighted_f1": 0.002065281701288202,
+    "generalisation_gap": 0.08064250000000006,
+    "training_time_seconds": 16.59915590286255,
+    "random_state": 42,
+    "excluded_identifier_columns": [
+        "post_id",
+        "account_id"
+    ],
+    "excluded_post_publication_columns": [],
+    "excluded_raw_high_cardinality_columns": [
+        "caption",
+        "hashtags",
+        "posting_datetime"
+    ],
+    "leakage_status": "PASSED",
+    "ninety_percent_holdout_target": "ACHIEVED",
+    "ninety_percent_cv_target": "ACHIEVED",
+    "validation_date": "2026-08-23T01:31:48.308441"
+}

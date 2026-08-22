@@ -1,0 +1,3 @@
+Model,Accuracy,Weighted_F1
+Previous HistGradientBoosting,0.90965,
+Tuned HistGradientBoosting,0.90925,0.9096263739732705

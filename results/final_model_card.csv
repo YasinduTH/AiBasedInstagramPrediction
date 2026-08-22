@@ -1,0 +1,21 @@
+Metric,Value
+Dataset,Synthetic V2
+Dataset Rows,100000
+Dataset Columns,62
+Target,performance_class
+Model,HistGradientBoostingClassifier
+Hold-out Accuracy,0.90965
+Hold-out Weighted F1,0.9099958211843674
+Hold-out Macro F1,0.9113790531260024
+Mean CV Accuracy,0.90807
+CV Accuracy Std,0.0020766800427605868
+Mean CV Weighted F1,0.9084025600843673
+CV F1 Std,0.002065281701288202
+Training Records,80000
+Testing Records,20000
+Feature Count,56
+Numeric Feature Count,51
+Categorical Feature Count,5
+Leakage Status,PASSED
+90% Hold-out Target,ACHIEVED
+90% CV Target,ACHIEVED

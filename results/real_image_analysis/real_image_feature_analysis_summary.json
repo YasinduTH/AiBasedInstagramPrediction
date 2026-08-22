@@ -1,0 +1,15 @@
+{
+    "project": "AI-Based Instagram Engagement Prediction and Content Optimization System",
+    "feature_extractor": "ResNet-50",
+    "feature_dimension": 2048,
+    "total_real_images": 34926,
+    "metadata_records": 34926,
+    "nan_values": 0,
+    "infinite_values": 0,
+    "pca_sample_size": 10000,
+    "pca_2_explained_variance_percent": 5.858373165130615,
+    "pca_50_components": 50,
+    "pca_50_cumulative_variance_percent": 33.63728332519531,
+    "best_exploratory_cluster_k": 3,
+    "best_silhouette_score": 0.08410577476024628
+}

@@ -1,0 +1,7 @@
+Dataset,Source,Records,Features,Target_Available,Caption_Available,Hashtag_Available,Image_Available,Used_For_Model,Reason
+real_caption_dataset_integrated.csv,REAL (captions_csv + captions_csv2),34927,4,No,Yes,No,Yes,No,Catalog table for raw images
+real_post_dataset_integrated.csv,REAL (Posts + Posts2),2000,42,Yes,Yes,Yes,No,No,Contains post-publication target leaks
+real_image_metadata.csv,REAL (scanned image folders),34927,7,No,No,No,Yes,No,Secondary image feature metadata
+real_modelling_dataset.csv,REAL (processed posts integrated),2000,15,Yes,Yes,Yes,No,Yes,Primary real modelling reference
+synthetic_modelling_dataset.csv,SYNTHETIC,100000,15,Yes,Yes,Yes,No,Yes,Primary synthetic modelling reference
+combined_development_dataset.csv,REAL & SYNTHETIC,102000,15,Yes,Yes,Yes,No,Yes,Comparative training and cross-validation

@@ -1,0 +1,9 @@
+,Value
+Real development records,2000
+Synthetic development records,100000
+Total development records,102000
+Number of predictors,60
+Number of categories,5
+Target Medium,36666
+Target Low,32667
+Target High,32667

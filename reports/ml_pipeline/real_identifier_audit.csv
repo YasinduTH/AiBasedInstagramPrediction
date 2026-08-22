@@ -1,0 +1,19 @@
+Dataset,Identifier Column,Total Values,Non-Null Values,Unique Values,Duplicate Values,Uniqueness Percentage (%)
+Instagram - Posts.csv,post_id,1000,1000,1000,0,100.0
+Instagram - Posts.csv,url,1000,1000,1000,0,100.0
+Instagram - Posts.csv,shortcode,1000,1000,1000,0,100.0
+Instagram - Posts.csv,pk,1000,1000,1000,0,100.0
+Instagram - Posts.csv,content_id,1000,1000,1000,0,100.0
+Instagram - Posts2.csv,post_id,1000,1000,1000,0,100.0
+Instagram - Posts2.csv,url,1000,1000,1000,0,100.0
+Instagram - Posts2.csv,shortcode,1000,1000,1000,0,100.0
+Instagram - Posts2.csv,pk,1000,1000,1000,0,100.0
+Instagram - Posts2.csv,content_id,1000,1000,1000,0,100.0
+instagram_analytics.csv,post_id,29999,29999,29999,0,100.0
+instagram_analytics.csv,account_id,29999,29999,20,29979,0.0667
+instagram_reach.csv,USERNAME,100,100,95,5,95.0
+instagram_reach.csv,S.No,100,100,30,70,30.0
+instagram_data/captions_csv.csv,Sr No,20515,20515,20515,0,100.0
+instagram_data/captions_csv.csv,Image File,20515,20515,20515,0,100.0
+instagram_data2/captions_csv2.csv,Sr No,14412,14412,14412,0,100.0
+instagram_data2/captions_csv2.csv,Image File,14412,14412,14412,0,100.0

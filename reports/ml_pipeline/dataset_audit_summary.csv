@@ -1,0 +1,13 @@
+Audit Item,Result
+Total records,100000.0
+Total variables,59.0
+Duplicate rows,0.0
+Duplicate post IDs,0.0
+Unique accounts,7999.0
+Binary class 0 (%),49.98
+Binary class 1 (%),50.02
+Variables with missing values,14.0
+Caption length mismatches,0.0
+Word count mismatches,79752.0
+Hashtag count mismatches,3834.0
+Impressions below reach,0.0

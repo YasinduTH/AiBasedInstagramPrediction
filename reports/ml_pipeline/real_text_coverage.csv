@@ -1,0 +1,9 @@
+Dataset,Column Name,Field Type,Total Rows,Non-Empty Count,Coverage (%),Avg Length,Median Length,Min Length,Max Length
+Instagram - Posts.csv,description,Caption,1000,964,96.4,390.43,280.5,1,2200
+Instagram - Posts2.csv,description,Caption,1000,964,96.4,387.92,272.0,1,2185
+instagram_reach.csv,Caption,Caption,100,94,94.0,150.32,116.5,2,704
+instagram_data/captions_csv.csv,Caption,Caption,20515,17100,83.3536,48.61,22.0,1,2176
+instagram_data2/captions_csv2.csv,Caption,Caption,14412,14412,100.0,46.21,41.0,3,228
+Instagram - Posts.csv,hashtags,Hashtag,1000,634,63.4,155.05,102.5,7,590
+Instagram - Posts2.csv,hashtags,Hashtag,1000,602,60.2,157.5,96.0,6,1193
+instagram_reach.csv,Hashtags,Hashtag,100,100,100.0,210.61,214.5,21,388

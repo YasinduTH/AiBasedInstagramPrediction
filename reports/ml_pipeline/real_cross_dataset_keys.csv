@@ -1,0 +1,6 @@
+Dataset A,Dataset B,Possible Common Key,Match Evidence,Recommendation
+Instagram - Posts.csv,Instagram - Posts2.csv,"post_id, url, shortcode, pk",Identical schema columns. Disjoint records (0 overlapping post_id or url values). Can be concatenated.,Concatenate rows (axis=0) to form a single scraped posts dataset.
+instagram_data/captions_csv.csv,instagram_data2/captions_csv2.csv,"Sr No, Image File","Contiguous, non-overlapping range of 'Sr No' (1 to 20,515 vs 20,516 to 34,927). Image File format aligns.",Concatenate rows (axis=0) to create a single captions lookup table.
+Instagram - Posts.csv / Posts2.csv,instagram_data/captions_csv.csv / captions_csv2.csv,None direct in tables,"No matching string descriptions, shortcodes, or IDs are found directly inside the files.",Can be joined if image files (img/img2) are mapped to CDN image URLs by extracting image features or visual hashing.
+instagram_analytics.csv,Instagram - Posts.csv / Posts2.csv,post_id,Zero overlapping post_id values (IG0000001 format in analytics vs. long numeric IDs in scraped posts).,Treat as independent modeling sources or keep separate.
+instagram_reach.csv,Instagram - Posts.csv / Posts2.csv,USERNAME / user_posted,No username or caption overlap between reach and scraped posts datasets.,Keep reach dataset separate.

@@ -1,0 +1,7 @@
+Dataset,Rows,Columns,Column Names (Sample),Numeric Columns,Categorical/Text Columns
+Instagram - Posts.csv,1000,40,"url, user_posted, description, hashtags, num_comments...",13,27
+Instagram - Posts2.csv,1000,41,"url, user_posted, description, hashtags, num_comments...",12,29
+instagram_analytics.csv,29999,23,"post_id, account_id, account_type, follower_count, media_type...",14,9
+instagram_reach.csv,100,8,"Unnamed: 0, S.No, USERNAME, Caption, Followers...",4,4
+captions_csv.csv,20515,3,"Sr No, Image File, Caption...",1,2
+captions_csv2.csv,14412,3,"Sr No, Image File, Caption...",1,2

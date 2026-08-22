@@ -1,0 +1,5 @@
+Dataset,Metric,Mean,Median,Min,Max
+instagram_data,Width,811.5,640.0,320,1080
+instagram_data,Height,833.94,640.0,180,1354
+instagram_data2,Width,827.83,720.0,320,1080
+instagram_data2,Height,842.94,640.0,168,1354

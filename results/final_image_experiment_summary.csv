@@ -1,0 +1,14 @@
+{
+    "Baseline_Model": "StackingClassifier (LR + SVM)",
+    "Image_Enhanced_Model": "StackingClassifier (LR + SVM + 12 Image features)",
+    "Baseline_Real_Data_Accuracy": 0.4534779132520488,
+    "Baseline_Real_Data_Weighted_F1": 0.44800873209704556,
+    "Image_Enhanced_Real_Data_Accuracy": 0.4524285428742754,
+    "Image_Enhanced_Real_Data_Weighted_F1": 0.44674257043787086,
+    "Accuracy_Improvement": -0.001049370377773362,
+    "Weighted_F1_Improvement": -0.0012661616591747027,
+    "Whether_Image_Information_Improved_Prediction": "No",
+    "Important_Image_Features": "N/A (Stacking Classifier meta-learner restriction)",
+    "Remaining_Limitations": "Absence of real-world post-to-image join keys limits validation of image modeling on scraper logs",
+    "Final_Model_Decision": "Baseline Model"
+}

@@ -1,0 +1,14 @@
+{
+    "model_name": "Logistic Regression",
+    "random_state": 42,
+    "training_observations": 81600,
+    "feature_count": 1517,
+    "target_classes": [
+        "Low",
+        "Medium",
+        "High"
+    ],
+    "real_test_accuracy": 0.4304,
+    "real_test_f1_weighted": 0.4318,
+    "preprocessing_reference": "models/preprocessing/preprocessor.pkl"
+}

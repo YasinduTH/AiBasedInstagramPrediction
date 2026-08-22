@@ -1,0 +1,8 @@
+Dataset,Source_Type,Records,Columns,Primary_Content,Engagement_Availability,Caption_Availability,Image_Availability
+Instagram - Posts.csv,REAL,1000,40,Account metadata & scraped posts,Yes,Yes,No
+Instagram - Posts2.csv,REAL,1000,41,Account metadata & scraped posts,Yes,Yes,No
+instagram_analytics.csv,REAL,29999,23,Aggregated post engagement metrics,Yes,No,No
+instagram_reach.csv,REAL,100,8,Reach and followers metrics,Yes,Yes,No
+captions_csv.csv,REAL,20515,3,Image filenames & caption strings,No,Yes,Yes
+captions_csv2.csv,REAL,14412,3,Image filenames & caption strings,No,Yes,Yes
+synthetic_instagram_engagement_dataset_100k.csv,SYNTHETIC,100000,59,Synthetic post & account features,Yes,Yes,Yes

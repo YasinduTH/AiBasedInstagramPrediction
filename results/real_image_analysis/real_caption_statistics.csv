@@ -1,0 +1,8 @@
+metric,value
+records,34926.0
+non_empty_captions,31511.0
+empty_captions,3415.0
+mean_length,43.36016148428105
+median_length,27.0
+minimum_length,0.0
+maximum_length,2177.0

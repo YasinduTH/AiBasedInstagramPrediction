@@ -1,0 +1,16 @@
+Feature,Feature_Type,Pre_Publication_Available,Potentially_Useful,Leakage_Risk,Decision,Reason
+caption,text,YES,YES,LOW,KEEP,Primary textual feature
+hashtags,text,YES,YES,LOW,KEEP,Primary textual feature
+caption_length,numeric,YES,YES,LOW,KEEP,Derived pre-publication feature
+word_count,numeric,YES,YES,LOW,KEEP,Derived pre-publication feature
+hashtag_count,numeric,YES,YES,LOW,KEEP,Derived pre-publication feature
+posting_hour,numeric,YES,YES,LOW,KEEP,Scheduling feature
+day_of_week,categorical,YES,YES,LOW,KEEP,Scheduling feature
+is_weekend,numeric,YES,YES,LOW,KEEP,Scheduling feature
+follower_count,numeric,YES,YES,LOW,KEEP,Account profile metadata
+verified_status,boolean,YES,YES,LOW,KEEP,Account profile metadata
+sponsored,boolean,YES,YES,LOW,KEEP,Campaign metadata
+media_type,categorical,YES,YES,LOW,KEEP,Post structure metadata
+likes,numeric,NO,NO,HIGH,EXCLUDE,Post-publication outcome metric
+comments,numeric,NO,NO,HIGH,EXCLUDE,Post-publication outcome metric
+engagement_rate,numeric,NO,NO,HIGH,EXCLUDE,Post-publication outcome metric

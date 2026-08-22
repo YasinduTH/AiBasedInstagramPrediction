@@ -1,0 +1,5 @@
+Model,Accuracy,Precision,Recall,Weighted_F1,Best_Parameters
+Optimized Logistic Regression,0.4495,0.4447,0.4495,0.4443,"{'solver': 'lbfgs', 'C': 0.01}"
+Optimized Linear SVM,0.45,0.444,0.45,0.442,{'C': 0.1}
+Optimized Random Forest,0.4439,0.4346,0.4439,0.4284,"{'n_estimators': 200, 'min_samples_split': 2, 'max_depth': 20}"
+Optimized Extra Trees,0.4415,0.4315,0.4415,0.4177,"{'n_estimators': 200, 'max_depth': 20}"

@@ -1,0 +1,3 @@
+Model,Feature_Count,Image_Feature_Count,Accuracy,Weighted_Precision,Weighted_Recall,Weighted_F1,Macro_F1,Training_Time_Seconds
+Text + Metadata Baseline,47,0,0.9114,0.9125981956644762,0.9114,0.9117775792276154,0.9131243207657275,14.452662706375122
+Text + Metadata + Image Features,56,9,0.9084,0.9097019777750688,0.9084,0.9088072469451858,0.9101953519006462,14.931110620498657

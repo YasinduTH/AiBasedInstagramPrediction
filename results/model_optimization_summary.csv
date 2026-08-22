@@ -1,0 +1,4 @@
+Dataset,Accuracy,Precision,Recall,Weighted_F1
+Real test observations only,0.4227,0.4499,0.4227,0.4232
+Synthetic test observations only,0.45,0.4452,0.45,0.4444
+Combined test dataset,0.4495,0.4447,0.4495,0.4443

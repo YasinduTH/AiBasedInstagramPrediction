@@ -1,0 +1,6 @@
+Model,Holdout_Accuracy,Weighted_F1,Selection_Status
+HistGradientBoosting - Original,0.90965,0.909996,FINAL CHAMPION
+HistGradientBoosting - Tuned,0.90925,0.909626,TUNED CANDIDATE
+Extra Trees,0.8327,0.832597,PREVIOUS CANDIDATE
+Random Forest,0.822,0.822241,PREVIOUS CANDIDATE
+Logistic Regression,0.5316,0.528828,PREVIOUS CANDIDATE
