@@ -2,18 +2,30 @@
 # AI-BASED INSTAGRAM ENGAGEMENT PREDICTION SYSTEM
 # PRODUCTION FLASK API
 # STAGE 9E
+#
+# IMAGE STORAGE:
+# Local backend/uploads/ folder
+# No Firebase Storage required
 # ============================================================
 
 import json
 import os
 import sys
-import tempfile
+import uuid
 from pathlib import Path
 
 import joblib
 import pandas as pd
-from flask import Flask, jsonify, request
+
+from flask import (
+    Flask,
+    jsonify,
+    request,
+    send_from_directory
+)
+
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 
 
 # ============================================================
@@ -21,19 +33,23 @@ from flask_cors import CORS
 # ============================================================
 
 BACKEND_DIR = Path(__file__).resolve().parent
+
 PROJECT_ROOT = BACKEND_DIR.parent
 
 MODELS_DIR = PROJECT_ROOT / "models"
+
 
 MODEL_FILE = (
     MODELS_DIR /
     "final_instagram_engagement_model.joblib"
 )
 
+
 FEATURE_FILE = (
     MODELS_DIR /
     "final_model_features.json"
 )
+
 
 METADATA_FILE = (
     MODELS_DIR /
@@ -42,22 +58,52 @@ METADATA_FILE = (
 
 
 # ============================================================
+# IMAGE STORAGE CONFIGURATION
+# ============================================================
+
+UPLOAD_FOLDER = (
+    BACKEND_DIR /
+    "uploads"
+)
+
+# Create uploads directory automatically
+UPLOAD_FOLDER.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+
+ALLOWED_IMAGE_EXTENSIONS = {
+    "jpg",
+    "jpeg",
+    "png",
+    "webp"
+}
+
+
+MAX_IMAGE_SIZE_MB = 10
+
+
+# ============================================================
 # FLASK APPLICATION
 # ============================================================
 
 app = Flask(__name__)
 
+
 CORS(
     app,
     resources={
-        r"/api/*": {
+        r"/*": {
             "origins": "*"
         }
     }
 )
 
+
+# Maximum request size = 10 MB
 app.config["MAX_CONTENT_LENGTH"] = (
-    10 * 1024 * 1024
+    MAX_IMAGE_SIZE_MB * 1024 * 1024
 )
 
 
@@ -66,8 +112,11 @@ app.config["MAX_CONTENT_LENGTH"] = (
 # ============================================================
 
 MODEL = None
+
 FEATURE_SCHEMA = None
+
 METADATA = None
+
 FEATURE_MAPPER = None
 
 
@@ -76,10 +125,18 @@ FEATURE_MAPPER = None
 # ============================================================
 
 print("=" * 70)
-print("AI INSTAGRAM PREDICTION API")
+
+print(
+    "AI INSTAGRAM PREDICTION API"
+)
+
 print("=" * 70)
 
-print("\nLoading feature mapper...")
+
+print(
+    "\nLoading feature mapper..."
+)
+
 
 try:
 
@@ -90,17 +147,21 @@ try:
             str(BACKEND_DIR)
         )
 
+
     from feature_mapper import (
         build_56_feature_vector
     )
+
 
     FEATURE_MAPPER = (
         build_56_feature_vector
     )
 
+
     print(
         "✓ Feature mapper loaded"
     )
+
 
 except Exception as error:
 
@@ -108,7 +169,9 @@ except Exception as error:
         "✗ Feature mapper loading failed"
     )
 
-    print(error)
+    print(
+        error
+    )
 
     raise
 
@@ -120,6 +183,7 @@ except Exception as error:
 print(
     "\nLoading feature schema..."
 )
+
 
 if not FEATURE_FILE.exists():
 
@@ -180,6 +244,7 @@ print(
     "\nLoading model metadata..."
 )
 
+
 if not METADATA_FILE.exists():
 
     raise FileNotFoundError(
@@ -212,6 +277,7 @@ print(
     "\nLoading production model..."
 )
 
+
 if not MODEL_FILE.exists():
 
     raise FileNotFoundError(
@@ -234,19 +300,30 @@ print(
 # FEATURE SCHEMA VALIDATION
 # ============================================================
 
-print("\n" + "=" * 70)
-print("FEATURE SCHEMA VALIDATION")
-print("=" * 70)
+print(
+    "\n" + "=" * 70
+)
+
+print(
+    "FEATURE SCHEMA VALIDATION"
+)
+
+print(
+    "=" * 70
+)
 
 
 EXPECTED_FEATURE_COUNT = 56
 
 
-if len(PRODUCTION_FEATURES) != EXPECTED_FEATURE_COUNT:
+if len(PRODUCTION_FEATURES) != (
+    EXPECTED_FEATURE_COUNT
+):
 
     raise ValueError(
         "Production feature schema must "
-        f"contain exactly {EXPECTED_FEATURE_COUNT} "
+        f"contain exactly "
+        f"{EXPECTED_FEATURE_COUNT} "
         f"features, found "
         f"{len(PRODUCTION_FEATURES)}"
     )
@@ -268,6 +345,7 @@ CATEGORICAL_FEATURES = (
     )
 )
 
+
 NUMERIC_FEATURES = (
     FEATURE_SCHEMA.get(
         "numeric_features",
@@ -281,15 +359,18 @@ print(
     f"{len(PRODUCTION_FEATURES)}"
 )
 
+
 print(
     f"Numeric features: "
     f"{len(NUMERIC_FEATURES)}"
 )
 
+
 print(
     f"Categorical features: "
     f"{len(CATEGORICAL_FEATURES)}"
 )
+
 
 print(
     "✓ Exactly 56 unique features"
@@ -345,6 +426,7 @@ def safe_bool(
 
         return default
 
+
     if isinstance(
         value,
         bool
@@ -352,9 +434,11 @@ def safe_bool(
 
         return value
 
+
     value = str(
         value
     ).strip().lower()
+
 
     return value in {
         "true",
@@ -373,9 +457,11 @@ def get_form_value(
         name
     )
 
+
     if value is None:
 
         return default
+
 
     return value
 
@@ -391,6 +477,7 @@ def get_json_value(
         default
     )
 
+
     return value
 
 
@@ -405,9 +492,11 @@ def validate_required_text(
             f"{field_name} is required."
         )
 
+
     value = str(
         value
     ).strip()
+
 
     if not value:
 
@@ -415,7 +504,247 @@ def validate_required_text(
             f"{field_name} cannot be empty."
         )
 
+
     return value
+
+
+def allowed_image(
+    filename
+):
+
+    if not filename:
+
+        return False
+
+
+    if "." not in filename:
+
+        return False
+
+
+    extension = (
+        filename
+        .rsplit(".", 1)[1]
+        .lower()
+    )
+
+
+    return extension in (
+        ALLOWED_IMAGE_EXTENSIONS
+    )
+
+
+def generate_unique_image_name(
+    original_filename
+):
+
+    safe_name = secure_filename(
+        original_filename
+    )
+
+
+    extension = Path(
+        safe_name
+    ).suffix.lower()
+
+
+    if not extension:
+
+        extension = ".jpg"
+
+
+    unique_name = (
+        f"{uuid.uuid4().hex}"
+        f"{extension}"
+    )
+
+
+    return unique_name
+
+
+# ============================================================
+# IMAGE STORAGE
+# ============================================================
+
+def save_uploaded_image():
+
+    """
+    Save uploaded image permanently inside:
+
+        backend/uploads/
+
+    Returns:
+
+        {
+            "original_file_name": ...,
+            "saved_file_name": ...,
+            "file_type": ...,
+            "file_size": ...,
+            "image_path": ...,
+            "image_url": ...
+        }
+
+    Returns None if no image was uploaded.
+    """
+
+    if "image" not in request.files:
+
+        return None
+
+
+    uploaded_image = (
+        request.files["image"]
+    )
+
+
+    if (
+        uploaded_image is None
+        or
+        not uploaded_image.filename
+    ):
+
+        return None
+
+
+    original_filename = (
+        uploaded_image.filename
+    )
+
+
+    # --------------------------------------------------------
+    # VALIDATE IMAGE FORMAT
+    # --------------------------------------------------------
+
+    if not allowed_image(
+        original_filename
+    ):
+
+        raise ValueError(
+            "Unsupported image format. "
+            "Allowed formats: JPG, JPEG, PNG, WEBP."
+        )
+
+
+    # --------------------------------------------------------
+    # GENERATE SAFE UNIQUE NAME
+    # --------------------------------------------------------
+
+    saved_filename = (
+        generate_unique_image_name(
+            original_filename
+        )
+    )
+
+
+    # --------------------------------------------------------
+    # FINAL IMAGE PATH
+    # --------------------------------------------------------
+
+    image_path = (
+        UPLOAD_FOLDER /
+        saved_filename
+    )
+
+
+    # --------------------------------------------------------
+    # SAVE IMAGE
+    # --------------------------------------------------------
+
+    uploaded_image.save(
+        str(image_path)
+    )
+
+
+    # --------------------------------------------------------
+    # VERIFY FILE
+    # --------------------------------------------------------
+
+    if not image_path.exists():
+
+        raise RuntimeError(
+            "Image could not be saved."
+        )
+
+
+    file_size = (
+        image_path.stat().st_size
+    )
+
+
+    # --------------------------------------------------------
+    # IMAGE URL
+    # --------------------------------------------------------
+
+    image_url = (
+        f"/uploads/{saved_filename}"
+    )
+
+
+    print(
+        "\n✓ Image saved:"
+    )
+
+    print(
+        f"  Original: "
+        f"{original_filename}"
+    )
+
+    print(
+        f"  Saved: "
+        f"{saved_filename}"
+    )
+
+    print(
+        f"  Size: "
+        f"{file_size} bytes"
+    )
+
+
+    return {
+
+        "original_file_name":
+            original_filename,
+
+        "saved_file_name":
+            saved_filename,
+
+        "file_type":
+            uploaded_image.mimetype
+            or "image/jpeg",
+
+        "file_size":
+            file_size,
+
+        "image_path":
+            str(image_path),
+
+        "image_url":
+            image_url
+    }
+
+
+# ============================================================
+# SERVE STORED IMAGES
+# ============================================================
+
+@app.route(
+    "/uploads/<filename>",
+    methods=["GET"]
+)
+def uploaded_file(
+    filename
+):
+
+    """
+    Serve images from:
+
+        backend/uploads/
+    """
+
+    return send_from_directory(
+        str(UPLOAD_FOLDER),
+        filename
+    )
 
 
 # ============================================================
@@ -443,6 +772,10 @@ def health():
 
         "features": len(
             PRODUCTION_FEATURES
+        ),
+
+        "image_storage": (
+            "local_backend_uploads"
         )
     })
 
@@ -501,6 +834,10 @@ def model_info():
 
         "categorical_features": len(
             CATEGORICAL_FEATURES
+        ),
+
+        "image_storage": (
+            "local_backend_uploads"
         )
     })
 
@@ -515,13 +852,13 @@ def model_info():
 )
 def predict():
 
-    temporary_image = None
+    saved_image = None
 
     try:
 
-        # ----------------------------------------------------
-        # DETECT REQUEST TYPE
-        # ----------------------------------------------------
+        # ====================================================
+        # 1. DETECT REQUEST TYPE
+        # ====================================================
 
         if request.is_json:
 
@@ -543,40 +880,44 @@ def predict():
                 )
 
 
-        # ----------------------------------------------------
-        # CAPTION
-        # ----------------------------------------------------
+        # ====================================================
+        # 2. CAPTION
+        # ====================================================
 
-        caption = validate_required_text(
-            data.get(
+        caption = (
+            validate_required_text(
+                data.get(
+                    "caption"
+                ),
                 "caption"
-            ),
-            "caption"
+            )
         )
 
 
-        # ----------------------------------------------------
-        # HASHTAGS
-        # ----------------------------------------------------
+        # ====================================================
+        # 3. HASHTAGS
+        # ====================================================
 
         hashtags = data.get(
             "hashtags",
             ""
         )
 
+
         hashtags = str(
             hashtags
         ).strip()
 
 
-        # ----------------------------------------------------
-        # ACCOUNT / POST DATA
-        # ----------------------------------------------------
+        # ====================================================
+        # 4. ACCOUNT / POST DATA
+        # ====================================================
 
         category = data.get(
             "category",
             "Other"
         )
+
 
         account_type = data.get(
             "account_type",
@@ -591,6 +932,7 @@ def predict():
             0
         )
 
+
         following_count = safe_int(
             data.get(
                 "following_count"
@@ -598,12 +940,14 @@ def predict():
             0
         )
 
+
         account_age_days = safe_int(
             data.get(
                 "account_age_days"
             ),
             365
         )
+
 
         verified_status = int(
             safe_bool(
@@ -614,12 +958,14 @@ def predict():
             )
         )
 
+
         posting_frequency = safe_float(
             data.get(
                 "posting_frequency"
             ),
             1.0
         )
+
 
         average_historical_engagement = (
             safe_float(
@@ -630,6 +976,7 @@ def predict():
             )
         )
 
+
         audience_growth_rate = safe_float(
             data.get(
                 "audience_growth_rate"
@@ -637,12 +984,14 @@ def predict():
             0.0
         )
 
+
         account_activity_level = safe_float(
             data.get(
                 "account_activity_level"
             ),
             0.5
         )
+
 
         content_consistency = safe_float(
             data.get(
@@ -652,9 +1001,9 @@ def predict():
         )
 
 
-        # ----------------------------------------------------
-        # POST TIMING
-        # ----------------------------------------------------
+        # ====================================================
+        # 5. POST TIMING
+        # ====================================================
 
         posting_hour = safe_int(
             data.get(
@@ -663,10 +1012,12 @@ def predict():
             12
         )
 
+
         day_of_week = data.get(
             "day_of_week",
             "Monday"
         )
+
 
         posting_time_period = data.get(
             "posting_time_period",
@@ -674,14 +1025,15 @@ def predict():
         )
 
 
-        # ----------------------------------------------------
-        # CONTENT
-        # ----------------------------------------------------
+        # ====================================================
+        # 6. CONTENT
+        # ====================================================
 
         media_type = data.get(
             "media_type",
             "Image"
         )
+
 
         has_location = int(
             safe_bool(
@@ -692,6 +1044,7 @@ def predict():
             )
         )
 
+
         sponsored = int(
             safe_bool(
                 data.get(
@@ -701,6 +1054,7 @@ def predict():
             )
         )
 
+
         content_originality = safe_float(
             data.get(
                 "content_originality"
@@ -708,12 +1062,14 @@ def predict():
             0.5
         )
 
+
         content_quality_score = safe_float(
             data.get(
                 "content_quality_score"
             ),
             0.5
         )
+
 
         creator_activity_score = safe_float(
             data.get(
@@ -723,61 +1079,34 @@ def predict():
         )
 
 
-        # ----------------------------------------------------
-        # IMAGE
-        # ----------------------------------------------------
+        # ====================================================
+        # 7. SAVE IMAGE PERMANENTLY
+        # ====================================================
+
+        saved_image = (
+            save_uploaded_image()
+        )
+
+
+        # ====================================================
+        # 8. IMAGE PATH FOR ML MODEL
+        # ====================================================
 
         image_path = None
 
 
-        if (
-            "image" in request.files
-        ):
+        if saved_image:
 
-            uploaded_image = (
-                request.files[
-                    "image"
+            image_path = (
+                saved_image[
+                    "image_path"
                 ]
             )
 
-            if (
-                uploaded_image
-                and
-                uploaded_image.filename
-            ):
 
-                suffix = Path(
-                    uploaded_image.filename
-                ).suffix
-
-                if not suffix:
-
-                    suffix = ".jpg"
-
-
-                temp_file = tempfile.NamedTemporaryFile(
-                    delete=False,
-                    suffix=suffix
-                )
-
-                uploaded_image.save(
-                    temp_file.name
-                )
-
-                temp_file.close()
-
-                temporary_image = (
-                    temp_file.name
-                )
-
-                image_path = (
-                    temporary_image
-                )
-
-
-        # ----------------------------------------------------
-        # OPTIONAL JSON IMAGE PATH
-        # ----------------------------------------------------
+        # ====================================================
+        # 9. OPTIONAL JSON IMAGE PATH
+        # ====================================================
 
         if (
             image_path is None
@@ -803,9 +1132,9 @@ def predict():
                 )
 
 
-        # ----------------------------------------------------
-        # BUILD EXACT 56 FEATURES
-        # ----------------------------------------------------
+        # ====================================================
+        # 10. BUILD EXACT 56 FEATURES
+        # ====================================================
 
         features = FEATURE_MAPPER(
 
@@ -873,9 +1202,9 @@ def predict():
         )
 
 
-        # ----------------------------------------------------
-        # VALIDATE FEATURES
-        # ----------------------------------------------------
+        # ====================================================
+        # 11. VALIDATE FEATURES
+        # ====================================================
 
         if features.shape != (
             1,
@@ -890,16 +1219,28 @@ def predict():
 
 
         missing_features = [
+
             feature
-            for feature in PRODUCTION_FEATURES
-            if feature not in features.columns
+
+            for feature
+            in PRODUCTION_FEATURES
+
+            if feature
+            not in features.columns
+
         ]
 
 
         unexpected_features = [
+
             feature
-            for feature in features.columns
-            if feature not in PRODUCTION_FEATURES
+
+            for feature
+            in features.columns
+
+            if feature
+            not in PRODUCTION_FEATURES
+
         ]
 
 
@@ -925,9 +1266,9 @@ def predict():
             )
 
 
-        # ----------------------------------------------------
-        # EXACT PRODUCTION ORDER
-        # ----------------------------------------------------
+        # ====================================================
+        # 12. EXACT PRODUCTION ORDER
+        # ====================================================
 
         features = features[
             PRODUCTION_FEATURES
@@ -942,9 +1283,9 @@ def predict():
             )
 
 
-        # ----------------------------------------------------
-        # MODEL PREDICTION
-        # ----------------------------------------------------
+        # ====================================================
+        # 13. MODEL PREDICTION
+        # ====================================================
 
         prediction = MODEL.predict(
             features
@@ -956,9 +1297,9 @@ def predict():
         )
 
 
-        # ----------------------------------------------------
-        # PROBABILITIES
-        # ----------------------------------------------------
+        # ====================================================
+        # 14. PROBABILITIES
+        # ====================================================
 
         probabilities = {}
 
@@ -973,6 +1314,7 @@ def predict():
                     features
                 )[0]
             )
+
 
             model_classes = (
                 MODEL.classes_
@@ -991,11 +1333,12 @@ def predict():
                 )
 
 
-        # ----------------------------------------------------
-        # CONFIDENCE
-        # ----------------------------------------------------
+        # ====================================================
+        # 15. CONFIDENCE
+        # ====================================================
 
         confidence = None
+
 
         if probabilities:
 
@@ -1004,68 +1347,180 @@ def predict():
             )
 
 
-        # ----------------------------------------------------
-        # INPUT SUMMARY
-        # ----------------------------------------------------
+        # ====================================================
+        # 16. INPUT SUMMARY
+        # ====================================================
 
         input_summary = {
 
-            "category": category,
+            "category":
+                category,
 
-            "account_type": account_type,
+            "account_type":
+                account_type,
 
-            "caption_length": int(
-                features.iloc[0][
-                    "caption_length"
-                ]
-            ),
+            "caption_length":
+                int(
+                    features.iloc[0][
+                        "caption_length"
+                    ]
+                ),
 
-            "has_image": int(
-                features.iloc[0][
-                    "has_image"
-                ]
-            ),
+            "has_image":
+                int(
+                    features.iloc[0][
+                        "has_image"
+                    ]
+                ),
 
-            "image_width": int(
-                features.iloc[0][
-                    "image_width"
-                ]
-            ),
+            "image_width":
+                int(
+                    features.iloc[0][
+                        "image_width"
+                    ]
+                ),
 
-            "image_height": int(
-                features.iloc[0][
-                    "image_height"
-                ]
-            )
+            "image_height":
+                int(
+                    features.iloc[0][
+                        "image_height"
+                    ]
+                )
         }
 
 
-        # ----------------------------------------------------
-        # RESPONSE
-        # ----------------------------------------------------
+        # ====================================================
+        # 17. IMAGE RESPONSE INFORMATION
+        # ====================================================
+
+        image_response = {
+
+            "uploaded":
+                False,
+
+            "original_file_name":
+                None,
+
+            "saved_file_name":
+                None,
+
+            "file_type":
+                None,
+
+            "file_size":
+                None,
+
+            "image_url":
+                None,
+
+            "image_width":
+                input_summary[
+                    "image_width"
+                ],
+
+            "image_height":
+                input_summary[
+                    "image_height"
+                ]
+        }
+
+
+        if saved_image:
+
+            image_response.update({
+
+                "uploaded":
+                    True,
+
+                "original_file_name":
+                    saved_image[
+                        "original_file_name"
+                    ],
+
+                "saved_file_name":
+                    saved_image[
+                        "saved_file_name"
+                    ],
+
+                "file_type":
+                    saved_image[
+                        "file_type"
+                    ],
+
+                "file_size":
+                    saved_image[
+                        "file_size"
+                    ],
+
+                "image_url":
+                    saved_image[
+                        "image_url"
+                    ]
+            })
+
+
+        # ====================================================
+        # 18. RESPONSE
+        # ====================================================
 
         response = {
 
-            "success": True,
+            "success":
+                True,
 
-            "prediction": (
-                prediction_label
-            ),
+            "prediction":
+                prediction_label,
 
-            "confidence": confidence,
+            "confidence":
+                confidence,
 
-            "probabilities": (
-                probabilities
-            ),
+            "probabilities":
+                probabilities,
 
-            "feature_count": int(
-                features.shape[1]
-            ),
+            "feature_count":
+                int(
+                    features.shape[1]
+                ),
 
-            "input_summary": (
-                input_summary
-            )
+            "input_summary":
+                input_summary,
+
+            "image":
+                image_response
         }
+
+
+        print(
+            "\n✓ Prediction completed"
+        )
+
+
+        print(
+            f"  Prediction: "
+            f"{prediction_label}"
+        )
+
+
+        if confidence is not None:
+
+            print(
+                f"  Confidence: "
+                f"{confidence * 100:.2f}%"
+            )
+
+
+        if saved_image:
+
+            print(
+                "  Image: "
+                f"{saved_image['saved_file_name']}"
+            )
+
+        else:
+
+            print(
+                "  Image: Not uploaded"
+            )
 
 
         return jsonify(
@@ -1075,9 +1530,46 @@ def predict():
 
     except Exception as error:
 
+        # ====================================================
+        # CLEANUP IMAGE IF PREDICTION FAILED
+        # ====================================================
+
+        if saved_image:
+
+            try:
+
+                failed_image = Path(
+                    saved_image[
+                        "image_path"
+                    ]
+                )
+
+
+                if failed_image.exists():
+
+                    failed_image.unlink()
+
+
+                    print(
+                        "✓ Failed prediction "
+                        "image removed."
+                    )
+
+            except Exception as cleanup_error:
+
+                print(
+                    "Image cleanup failed:"
+                )
+
+                print(
+                    cleanup_error
+                )
+
+
         print(
             "\nPREDICTION ERROR:"
         )
+
 
         print(
             repr(error)
@@ -1086,31 +1578,37 @@ def predict():
 
         return jsonify({
 
-            "success": False,
+            "success":
+                False,
 
-            "error": str(
-                error
-            )
+            "error":
+                str(error)
+
         }), 400
 
 
-    finally:
+# ============================================================
+# MAXIMUM REQUEST SIZE ERROR
+# ============================================================
 
-        # ----------------------------------------------------
-        # REMOVE TEMPORARY IMAGE
-        # ----------------------------------------------------
+@app.errorhandler(
+    413
+)
+def request_entity_too_large(
+    error
+):
 
-        if temporary_image:
+    return jsonify({
 
-            try:
+        "success":
+            False,
 
-                os.remove(
-                    temporary_image
-                )
+        "error":
+            "Image is too large. "
+            f"Maximum allowed size is "
+            f"{MAX_IMAGE_SIZE_MB} MB."
 
-            except Exception:
-
-                pass
+    }), 413
 
 
 # ============================================================
@@ -1119,45 +1617,77 @@ def predict():
 
 if __name__ == "__main__":
 
-    print("\n" + "=" * 70)
-    print("PRODUCTION SERVICE READY")
-    print("=" * 70)
+    print(
+        "\n" + "=" * 70
+    )
+
+    print(
+        "PRODUCTION SERVICE READY"
+    )
+
+    print(
+        "=" * 70
+    )
+
 
     print(
         "\nAI INSTAGRAM PREDICTION API"
     )
+
 
     print(
         f"Model: "
         f"{type(MODEL).__name__}"
     )
 
+
     print(
         f"Features: "
         f"{len(PRODUCTION_FEATURES)}"
     )
 
+
     print(
-        "API: http://127.0.0.1:5000"
+        "API: "
+        "http://127.0.0.1:5000"
     )
+
+
+    print(
+        "Image storage: "
+        f"{UPLOAD_FOLDER}"
+    )
+
 
     print(
         "\nEndpoints:"
     )
 
+
     print(
         "GET  /api/health"
     )
+
 
     print(
         "GET  /api/model-info"
     )
 
+
     print(
         "POST /api/predict"
     )
 
-    print("=" * 70)
+
+    print(
+        "GET  /uploads/<filename>"
+    )
+
+
+    print(
+        "=" * 70
+    )
+
 
     app.run(
         host="127.0.0.1",

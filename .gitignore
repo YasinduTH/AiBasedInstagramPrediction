@@ -1,55 +1,247 @@
+# ============================================================
+# AI INSTAGRAM PREDICTION SYSTEM - GITIGNORE
+# ============================================================
+
+
+# ============================================================
 # DATASETS - DO NOT UPLOAD
+# ============================================================
+
 datasets/raw/
 datasets/processed/
 datasets/Synthetic/
 
+# Dataset archives
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+
+# Large dataset files
+*.csv
+*.parquet
+*.feather
+
+# NOTE:
+# If you have important CSV files that MUST be tracked,
+# remove the *.csv rule above.
+
+
+# ============================================================
 # PYTHON
+# ============================================================
+
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.so
 
+# Python cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+
+# ============================================================
 # VIRTUAL ENVIRONMENTS
+# ============================================================
+
 venv/
 .venv/
 env/
 ENV/
+env.bak/
+venv.bak/
 
-# JUPYTER
+
+# ============================================================
+# JUPYTER NOTEBOOKS
+# ============================================================
+
 .ipynb_checkpoints/
 
-# SECRETS
+
+# ============================================================
+# NODE / REACT
+# ============================================================
+
+node_modules/
+frontend/node_modules/
+
+# Build output
+dist/
+frontend/dist/
+build/
+frontend/build/
+
+# Vite
+.vite/
+
+
+# ============================================================
+# SECRETS / ENVIRONMENT VARIABLES
+# ============================================================
+
 .env
 .env.*
 !.env.example
 
+
+# ============================================================
 # FIREBASE CREDENTIALS
+# ============================================================
+
 serviceAccountKey.json
 firebase-adminsdk*.json
 *-firebase-adminsdk-*.json
 
-# TEMPORARY UPLOADS
+firebase-debug.log
+
+
+# ============================================================
+# TEMPORARY UPLOADED IMAGES
+# ============================================================
+
 backend/uploads/*
 !backend/uploads/.gitkeep
 
 uploads/
+
 tmp/
 temp/
 
-# GENERATED PRODUCTION OUTPUTS
+# Other temporary media
+*.tmp
+*.temp
+
+
+# ============================================================
+# GENERATED ML / AI OUTPUTS
+# ============================================================
+
 results/production/
 results/real_target/
 results/real_multimodal_evaluation/
 results/deep_image_features/
 
-# LOGS
-*.log
+# Generated prediction outputs
+results/
+outputs/
 
-# IDE
+# Model-generated temporary files
+*.pickle
+*.pkl
+*.joblib
+
+# NOTE:
+# If your trained model files are required for the project,
+# DO NOT ignore them. Remove *.pkl / *.joblib if necessary.
+
+
+# ============================================================
+# LOGS
+# ============================================================
+
+*.log
+logs/
+
+
+# ============================================================
+# DATABASE / LOCAL DATA
+# ============================================================
+
+*.db
+*.sqlite
+*.sqlite3
+
+
+# ============================================================
+# IDE / EDITORS
+# ============================================================
+
 .vscode/
 .idea/
+*.swp
+*.swo
+*.swn
 
-# OS
+
+# ============================================================
+# OPERATING SYSTEM
+# ============================================================
+
 .DS_Store
 Thumbs.db
 desktop.ini
+
+
+# ============================================================
+# BACKUP FILES
+# ============================================================
+
+*.bak
+*.backup
+*~
+*.old
+
+
+# ============================================================
+# PYTHON DISTRIBUTION / PACKAGING
+# ============================================================
+
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+
+
+# ============================================================
+# MAC / WINDOWS TEMPORARY FILES
+# ============================================================
+
+.AppleDouble
+.LSOverride
+Icon?
+
+ehthumbs.db
+Thumbs.db
+
+
+# ============================================================
+# LOCAL CONFIGURATION
+# ============================================================
+
+*.local
+*.local.json
+
+
+# ============================================================
+# FIREBASE LOCAL EMULATOR
+# ============================================================
+
+.firebase/
+firebase-debug.log
+
+
+# ============================================================
+# OPTIONAL: LARGE MEDIA FILES
+# ============================================================
+
+# Uncomment these if you don't want large media files in GitHub:
+#
+# *.mp4
+# *.mov
+# *.avi
+# *.mkv
+# *.wav
+# *.mp3
+# *.psd
+# *.zip
