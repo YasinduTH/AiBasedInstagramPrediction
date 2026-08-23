@@ -1,7 +1,7 @@
 # ============================================================
 # AI-BASED INSTAGRAM ENGAGEMENT PREDICTION SYSTEM
 # PRODUCTION FLASK API
-# STAGE 9E
+# STAGE 1 - CONTENT OPTIMIZATION INTEGRATION
 #
 # IMAGE STORAGE:
 # Local backend/uploads/ folder
@@ -26,6 +26,15 @@ from flask import (
 
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+
+
+# ============================================================
+# CONTENT OPTIMIZATION ENGINE
+# ============================================================
+
+from services.content_optimizer import (
+    generate_content_optimization
+)
 
 
 # ============================================================
@@ -66,7 +75,7 @@ UPLOAD_FOLDER = (
     "uploads"
 )
 
-# Create uploads directory automatically
+
 UPLOAD_FOLDER.mkdir(
     parents=True,
     exist_ok=True
@@ -101,7 +110,6 @@ CORS(
 )
 
 
-# Maximum request size = 10 MB
 app.config["MAX_CONTENT_LENGTH"] = (
     MAX_IMAGE_SIZE_MB * 1024 * 1024
 )
@@ -203,10 +211,6 @@ with open(
         file
     )
 
-
-# ============================================================
-# EXTRACT FEATURE LIST
-# ============================================================
 
 PRODUCTION_FEATURES = (
     FEATURE_SCHEMA.get(
@@ -573,16 +577,7 @@ def save_uploaded_image():
 
         backend/uploads/
 
-    Returns:
-
-        {
-            "original_file_name": ...,
-            "saved_file_name": ...,
-            "file_type": ...,
-            "file_size": ...,
-            "image_path": ...,
-            "image_url": ...
-        }
+    Returns image metadata.
 
     Returns None if no image was uploaded.
     """
@@ -735,12 +730,6 @@ def uploaded_file(
     filename
 ):
 
-    """
-    Serve images from:
-
-        backend/uploads/
-    """
-
     return send_from_directory(
         str(UPLOAD_FOLDER),
         filename
@@ -776,6 +765,10 @@ def health():
 
         "image_storage": (
             "local_backend_uploads"
+        ),
+
+        "content_optimization": (
+            "enabled"
         )
     })
 
@@ -838,6 +831,10 @@ def model_info():
 
         "image_storage": (
             "local_backend_uploads"
+        ),
+
+        "content_optimization": (
+            "enabled"
         )
     })
 
@@ -1460,7 +1457,114 @@ def predict():
 
 
         # ====================================================
-        # 18. RESPONSE
+        # 18. IMAGE ANALYSIS DATA FOR OPTIMIZER
+        # ====================================================
+
+        def get_feature_value(
+            possible_names,
+            default=None
+        ):
+
+            for name in possible_names:
+
+                if name in features.columns:
+
+                    value = features.iloc[0][
+                        name
+                    ]
+
+                    try:
+
+                        if pd.isna(value):
+
+                            return default
+
+                    except Exception:
+
+                        pass
+
+                    return value
+
+            return default
+
+
+        image_brightness = get_feature_value(
+            [
+                "image_brightness",
+                "brightness",
+                "avg_brightness",
+                "image_avg_brightness"
+            ],
+            None
+        )
+
+
+        image_contrast = get_feature_value(
+            [
+                "image_contrast",
+                "contrast",
+                "image_avg_contrast"
+            ],
+            None
+        )
+
+
+        image_sharpness = get_feature_value(
+            [
+                "image_sharpness",
+                "sharpness",
+                "image_avg_sharpness"
+            ],
+            None
+        )
+
+
+        # ====================================================
+        # 19. CONTENT OPTIMIZATION ENGINE
+        # ====================================================
+
+        optimization = (
+            generate_content_optimization(
+
+                caption=caption,
+
+                hashtags=hashtags,
+
+                category=category,
+
+                account_type=account_type,
+
+                account_activity_level=(
+                    account_activity_level
+                ),
+
+                content_consistency=(
+                    content_consistency
+                ),
+
+                prediction=prediction_label,
+
+                confidence=confidence,
+
+                image_analysis={
+
+                    **image_response,
+
+                    "brightness":
+                        image_brightness,
+
+                    "contrast":
+                        image_contrast,
+
+                    "sharpness":
+                        image_sharpness
+                }
+            )
+        )
+
+
+        # ====================================================
+        # 20. RESPONSE
         # ====================================================
 
         response = {
@@ -1486,9 +1590,16 @@ def predict():
                 input_summary,
 
             "image":
-                image_response
+                image_response,
+
+            "optimization":
+                optimization
         }
 
+
+        # ====================================================
+        # 21. LOG RESULT
+        # ====================================================
 
         print(
             "\n✓ Prediction completed"
@@ -1507,6 +1618,12 @@ def predict():
                 f"  Confidence: "
                 f"{confidence * 100:.2f}%"
             )
+
+
+        print(
+            f"  Optimization score: "
+            f"{optimization.get('optimization_score')}"
+        )
 
 
         if saved_image:
@@ -1554,6 +1671,7 @@ def predict():
                         "✓ Failed prediction "
                         "image removed."
                     )
+
 
             except Exception as cleanup_error:
 
@@ -1656,6 +1774,11 @@ if __name__ == "__main__":
     print(
         "Image storage: "
         f"{UPLOAD_FOLDER}"
+    )
+
+
+    print(
+        "Content optimization: ENABLED"
     )
 
 

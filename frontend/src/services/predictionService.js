@@ -11,7 +11,6 @@ import { db, auth } from "../firebase";
 // ============================================================
 
 const API_URL = "http://127.0.0.1:5000/api/predict";
-
 const API_BASE_URL = "http://127.0.0.1:5000";
 
 
@@ -84,36 +83,30 @@ export async function runPrediction({
 
   const formData = new FormData();
 
-
   formData.append(
     "caption",
     cleanCaption
   );
-
 
   formData.append(
     "hashtags",
     cleanHashtags
   );
 
-
   formData.append(
     "category",
     category
   );
-
 
   formData.append(
     "account_type",
     accountType
   );
 
-
   formData.append(
     "account_activity_level",
     String(activityLevel)
   );
-
 
   formData.append(
     "content_consistency",
@@ -136,6 +129,7 @@ export async function runPrediction({
       "Image attached:",
       image.name
     );
+
   } else {
 
     console.log(
@@ -242,21 +236,22 @@ export async function runPrediction({
   };
 
 
-  // ----------------------------------------------------------
+  // ==========================================================
   // IMAGE WAS SUCCESSFULLY STORED BY FLASK
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if (
     apiImage &&
     apiImage.uploaded === true
   ) {
 
-    let imageUrl = apiImage.image_url || null;
+    let imageUrl =
+      apiImage.image_url || null;
 
 
-    // --------------------------------------------------------
-    // Convert relative Flask URL into full URL
-    // --------------------------------------------------------
+    // ========================================================
+    // CONVERT RELATIVE FLASK URL TO FULL URL
+    // ========================================================
 
     if (
       imageUrl &&
@@ -320,7 +315,33 @@ export async function runPrediction({
 
 
   // ==========================================================
-  // 10. BUILD COMPLETE FIRESTORE HISTORY RECORD
+  // 10. EXTRACT CONTENT OPTIMIZATION
+  // ==========================================================
+  //
+  // The Flask API currently returns the optimization result.
+  // Save it separately in Firestore so the History page,
+  // Dashboard and future reports can access it directly.
+  //
+  // Supports both:
+  // result.optimization
+  // result.content_optimization
+  //
+  // ==========================================================
+
+  const optimization =
+    result.optimization ||
+    result.content_optimization ||
+    {};
+
+
+  console.log(
+    "Content optimization:",
+    optimization
+  );
+
+
+  // ==========================================================
+  // 11. BUILD COMPLETE FIRESTORE HISTORY RECORD
   // ==========================================================
 
   const predictionData = {
@@ -413,12 +434,10 @@ export async function runPrediction({
     prediction:
       result.prediction || null,
 
-
     confidence:
       typeof result.confidence === "number"
         ? result.confidence
         : null,
-
 
     probabilities:
       result.probabilities || {},
@@ -441,6 +460,14 @@ export async function runPrediction({
 
 
     // ========================================================
+    // CONTENT OPTIMIZATION
+    // ========================================================
+
+    optimization:
+      optimization,
+
+
+    // ========================================================
     // COMPLETE API RESPONSE
     // ========================================================
 
@@ -458,7 +485,7 @@ export async function runPrediction({
 
 
   // ==========================================================
-  // 11. SAVE TO FIRESTORE
+  // 12. SAVE TO FIRESTORE
   // ==========================================================
 
   const predictionRef =
@@ -471,8 +498,14 @@ export async function runPrediction({
     );
 
 
+  console.log(
+    "Prediction saved to Firestore:",
+    predictionRef.id
+  );
+
+
   // ==========================================================
-  // 12. RETURN RECORD TO UI
+  // 13. RETURN COMPLETE RECORD TO UI
   // ==========================================================
 
   return {

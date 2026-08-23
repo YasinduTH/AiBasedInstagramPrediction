@@ -1,4 +1,3 @@
-import History from "./pages/history";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -13,11 +12,18 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
 import Prediction from "./pages/prediction";
+import History from "./pages/history";
+import Reminders from "./pages/reminders";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // ==========================================================
+  // FIREBASE AUTHENTICATION LISTENER
+  // ==========================================================
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(
@@ -31,7 +37,10 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Firebase authentication is still loading
+  // ==========================================================
+  // AUTHENTICATION LOADING
+  // ==========================================================
+
   if (loading) {
     return (
       <div
@@ -40,6 +49,8 @@ function App() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          background: "#0f172a",
+          color: "#ffffff",
           fontFamily: "Arial, sans-serif",
         }}
       >
@@ -48,19 +59,18 @@ function App() {
     );
   }
 
+  // ==========================================================
+  // APPLICATION ROUTES
+  // ==========================================================
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-  path="/history"
-  element={
-    <ProtectedRoute user={user}>
-      <History user={user} />
-    </ProtectedRoute>
-  }
-/>
 
-        {/* Home */}
+        {/* ====================================================
+            HOME
+        ==================================================== */}
+
         <Route
           path="/"
           element={
@@ -72,7 +82,11 @@ function App() {
           }
         />
 
-        {/* Login */}
+
+        {/* ====================================================
+            LOGIN
+        ==================================================== */}
+
         <Route
           path="/login"
           element={
@@ -84,7 +98,11 @@ function App() {
           }
         />
 
-        {/* Registration */}
+
+        {/* ====================================================
+            REGISTRATION
+        ==================================================== */}
+
         <Route
           path="/register"
           element={
@@ -96,7 +114,11 @@ function App() {
           }
         />
 
-        {/* Dashboard */}
+
+        {/* ====================================================
+            DASHBOARD
+        ==================================================== */}
+
         <Route
           path="/dashboard"
           element={
@@ -106,12 +128,44 @@ function App() {
           }
         />
 
-        {/* AI Engagement Prediction */}
+
+        {/* ====================================================
+            AI ENGAGEMENT PREDICTION
+        ==================================================== */}
+
         <Route
           path="/prediction"
           element={
             <ProtectedRoute user={user}>
-              <Prediction />
+              <Prediction user={user} />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* ====================================================
+            PREDICTION HISTORY
+        ==================================================== */}
+
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute user={user}>
+              <History user={user} />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* ====================================================
+            INSTAGRAM POST REMINDERS
+        ==================================================== */}
+
+        <Route
+          path="/reminders"
+          element={
+            <ProtectedRoute user={user}>
+              <Reminders user={user} />
             </ProtectedRoute>
           }
         />

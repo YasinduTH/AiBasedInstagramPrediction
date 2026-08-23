@@ -6,23 +6,95 @@ import {
 
 import { db } from "../firebase";
 
-export async function createUserProfile(user) {
+// ============================================================
+// CREATE / UPDATE USER PROFILE
+// ============================================================
+
+export async function createUserProfile(
+  user,
+  profileData = {}
+) {
+  // ==========================================================
+  // VALIDATE USER
+  // ==========================================================
+
   if (!user) {
-    throw new Error("User is required.");
+    throw new Error(
+      "User is required."
+    );
   }
 
-  const userRef = doc(db, "users", user.uid);
+  // ==========================================================
+  // EXTRACT PROFILE DATA
+  // ==========================================================
+
+  const {
+    fullName = "",
+    dateOfBirth = "",
+    instagramProfile = "",
+  } = profileData;
+
+  // ==========================================================
+  // FIRESTORE USER DOCUMENT
+  // ==========================================================
+
+  const userRef = doc(
+    db,
+    "users",
+    user.uid
+  );
+
+  // ==========================================================
+  // SAVE PROFILE
+  // ==========================================================
 
   await setDoc(
     userRef,
     {
-      email: user.email || "",
-      displayName: user.displayName || "",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      // ------------------------------------------------------
+      // BASIC USER INFORMATION
+      // ------------------------------------------------------
+
+      email:
+        user.email || "",
+
+      displayName:
+        fullName.trim() ||
+        user.displayName ||
+        "",
+
+      fullName:
+        fullName.trim(),
+
+      // ------------------------------------------------------
+      // PERSONAL INFORMATION
+      // ------------------------------------------------------
+
+      dateOfBirth:
+        dateOfBirth || "",
+
+      // ------------------------------------------------------
+      // INSTAGRAM INFORMATION
+      // ------------------------------------------------------
+
+      instagramProfile:
+        instagramProfile.trim(),
+
+      // ------------------------------------------------------
+      // TIMESTAMPS
+      // ------------------------------------------------------
+
+      createdAt:
+        serverTimestamp(),
+
+      updatedAt:
+        serverTimestamp(),
     },
     {
+      // Keep existing profile fields
       merge: true,
     }
   );
+
+  return true;
 }

@@ -80,6 +80,13 @@ function History({ user }) {
       return "0.00%";
     }
 
+    // Supports both:
+    // 0.9286 -> 92.86%
+    // 92.86 -> 92.86%
+    if (value > 1) {
+      return `${value.toFixed(2)}%`;
+    }
+
     return `${(value * 100).toFixed(2)}%`;
   };
 
@@ -116,7 +123,6 @@ function History({ user }) {
       return null;
     }
 
-    // Already a complete URL
     if (
       imageUrl.startsWith("http://") ||
       imageUrl.startsWith("https://")
@@ -124,14 +130,29 @@ function History({ user }) {
       return imageUrl;
     }
 
-    // Flask returns something like:
-    // /uploads/filename.jpg
-
     if (imageUrl.startsWith("/")) {
       return `${BACKEND_URL}${imageUrl}`;
     }
 
     return `${BACKEND_URL}/${imageUrl}`;
+  };
+
+  // ============================================================
+  // HELPER
+  // ============================================================
+
+  const getValue = (...values) => {
+    for (const value of values) {
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== ""
+      ) {
+        return value;
+      }
+    }
+
+    return null;
   };
 
   // ============================================================
@@ -173,7 +194,8 @@ function History({ user }) {
             </h1>
 
             <p style={styles.subtitle}>
-              View your previous Instagram engagement predictions.
+              View your previous Instagram engagement predictions
+              and AI content optimization results.
             </p>
           </div>
 
@@ -228,16 +250,10 @@ function History({ user }) {
         {history.length > 0 && (
           <div style={styles.list}>
 
-            {/* COUNT */}
-
             <div style={styles.count}>
               {history.length} prediction
               {history.length !== 1 ? "s" : ""} found
             </div>
-
-            {/* ==================================================
-                PREDICTION CARDS
-            ================================================== */}
 
             {history.map((item) => {
 
@@ -249,19 +265,6 @@ function History({ user }) {
 
               // ==================================================
               // API RESPONSE
-              //
-              // Your new Firestore structure contains:
-              //
-              // apiResponse
-              //   └── image
-              //        ├── file_size
-              //        ├── file_type
-              //        ├── image_height
-              //        ├── image_url
-              //        ├── image_width
-              //        ├── original_file_name
-              //        ├── saved_file_name
-              //        └── uploaded
               // ==================================================
 
               const apiResponse =
@@ -271,9 +274,7 @@ function History({ user }) {
                 apiResponse.image || {};
 
               // ==================================================
-              // OTHER POSSIBLE IMAGE STRUCTURES
-              //
-              // This keeps compatibility with older records.
+              // IMAGE COMPATIBILITY
               // ==================================================
 
               const imageDetails =
@@ -438,6 +439,185 @@ function History({ user }) {
                 apiResponse.input_summary ||
                 {};
 
+              // ==================================================
+              // OPTIMIZATION
+              // ==================================================
+
+              const optimization =
+                item.optimization ||
+                apiResponse.optimization ||
+                null;
+
+              // ==================================================
+              // OPTIMIZATION SECTIONS
+              // ==================================================
+
+              const optimizationCaption =
+                optimization?.caption || {};
+
+              const optimizationHashtag =
+                optimization?.hashtag ||
+                optimization?.hashtags ||
+                {};
+
+              const optimizationImage =
+                optimization?.image || {};
+
+              const optimizationAccount =
+                optimization?.account || {};
+
+              // ==================================================
+              // OPTIMIZATION SCORE
+              // ==================================================
+
+              const optimizationScore = getValue(
+                optimization?.score,
+                optimization?.optimization_score,
+                optimization?.optimizationScore
+              );
+
+              // ==================================================
+              // CAPTION DATA
+              // ==================================================
+
+              const captionCharacterCount = getValue(
+                optimizationCaption.character_count,
+                optimizationCaption.characterCount
+              );
+
+              const captionHasCTA = getValue(
+                optimizationCaption.has_call_to_action,
+                optimizationCaption.hasCallToAction
+              );
+
+              const captionHasEmoji = getValue(
+                optimizationCaption.has_emoji,
+                optimizationCaption.hasEmoji
+              );
+
+              const captionHasQuestion = getValue(
+                optimizationCaption.has_question,
+                optimizationCaption.hasQuestion
+              );
+
+              const captionStatus = getValue(
+                optimizationCaption.status
+              );
+
+              const captionStrengths =
+                optimizationCaption.strengths || [];
+
+              const captionSuggestions =
+                optimizationCaption.suggestions || [];
+
+              const captionWordCount = getValue(
+                optimizationCaption.word_count,
+                optimizationCaption.wordCount
+              );
+
+              // ==================================================
+              // HASHTAG DATA
+              // ==================================================
+
+              const hashtagCount = getValue(
+                optimizationHashtag.hashtag_count,
+                optimizationHashtag.hashtagCount
+              );
+
+              const hashtagList = getValue(
+                optimizationHashtag.hashtags,
+                optimizationHashtag.list
+              );
+
+              const hashtagStatus = getValue(
+                optimizationHashtag.status
+              );
+
+              const hashtagStrengths =
+                optimizationHashtag.strengths || [];
+
+              const hashtagSuggestions =
+                optimizationHashtag.suggestions || [];
+
+              // ==================================================
+              // IMAGE OPTIMIZATION DATA
+              // ==================================================
+
+              const imageBrightness = getValue(
+                optimizationImage.brightness
+              );
+
+              const imageContrast = getValue(
+                optimizationImage.contrast
+              );
+
+              const imageSharpness = getValue(
+                optimizationImage.sharpness
+              );
+
+              const imageOptimizationWidth = getValue(
+                optimizationImage.width,
+                optimizationImage.image_width,
+                optimizationImage.imageWidth
+              );
+
+              const imageOptimizationHeight = getValue(
+                optimizationImage.height,
+                optimizationImage.image_height,
+                optimizationImage.imageHeight
+              );
+
+              const imageOptimizationStatus = getValue(
+                optimizationImage.status
+              );
+
+              const imageOptimizationStrengths =
+                optimizationImage.strengths || [];
+
+              const imageOptimizationSuggestions =
+                optimizationImage.suggestions || [];
+
+              // ==================================================
+              // ACCOUNT OPTIMIZATION DATA
+              // ==================================================
+
+              const accountType = getValue(
+                optimizationAccount.account_type,
+                optimizationAccount.accountType,
+                input.accountType,
+                inputSummary.account_type
+              );
+
+              const accountActivityLevel = getValue(
+                optimizationAccount.activity_level,
+                optimizationAccount.activityLevel,
+                input.accountActivityLevel,
+                inputSummary.account_activity_level
+              );
+
+              const accountConsistency = getValue(
+                optimizationAccount.content_consistency,
+                optimizationAccount.contentConsistency,
+                input.contentConsistency,
+                inputSummary.content_consistency
+              );
+
+              const accountStrengths =
+                optimizationAccount.strengths || [];
+
+              const accountSuggestions =
+                optimizationAccount.suggestions || [];
+
+              // ==================================================
+              // OVERALL OPTIMIZATION DATA
+              // ==================================================
+
+              const overallSuggestions =
+                optimization?.suggestions || [];
+
+              const overallStrengths =
+                optimization?.strengths || [];
+
               return (
                 <div
                   key={item.id}
@@ -488,8 +668,6 @@ function History({ user }) {
 
                     <div style={styles.grid}>
 
-                      {/* CAPTION */}
-
                       <div style={styles.field}>
                         <strong>
                           Caption
@@ -501,8 +679,6 @@ function History({ user }) {
                         </p>
                       </div>
 
-                      {/* HASHTAGS */}
-
                       <div style={styles.field}>
                         <strong>
                           Hashtags
@@ -513,8 +689,6 @@ function History({ user }) {
                             "No hashtags"}
                         </p>
                       </div>
-
-                      {/* CATEGORY */}
 
                       <div style={styles.field}>
                         <strong>
@@ -528,8 +702,6 @@ function History({ user }) {
                         </p>
                       </div>
 
-                      {/* ACCOUNT TYPE */}
-
                       <div style={styles.field}>
                         <strong>
                           Account Type
@@ -542,8 +714,6 @@ function History({ user }) {
                         </p>
                       </div>
 
-                      {/* ACTIVITY */}
-
                       <div style={styles.field}>
                         <strong>
                           Activity Level
@@ -555,8 +725,6 @@ function History({ user }) {
                             "Not specified"}
                         </p>
                       </div>
-
-                      {/* CONSISTENCY */}
 
                       <div style={styles.field}>
                         <strong>
@@ -583,8 +751,6 @@ function History({ user }) {
                       Image
                     </h3>
 
-                    {/* IMAGE STATUS */}
-
                     <div
                       style={
                         hasImage
@@ -598,7 +764,6 @@ function History({ user }) {
                       </span>
 
                       <div>
-
                         <strong>
                           {hasImage
                             ? "Image Uploaded"
@@ -610,14 +775,11 @@ function History({ user }) {
                             ? "The image was received and analyzed by the AI model."
                             : "No image was provided for this prediction."}
                         </p>
-
                       </div>
 
                     </div>
 
-                    {/* ==================================================
-                        IMAGE PREVIEW
-                    ================================================== */}
+                    {/* IMAGE PREVIEW */}
 
                     {hasImage && imageUrl && (
                       <div style={styles.previewContainer}>
@@ -642,14 +804,10 @@ function History({ user }) {
                       </div>
                     )}
 
-                    {/* ==================================================
-                        IMAGE DETAILS
-                    ================================================== */}
+                    {/* IMAGE DETAILS */}
 
                     {hasImage && (
                       <div style={styles.imageDetailsBox}>
-
-                        {/* FILE NAME */}
 
                         <div style={styles.imageDetail}>
                           <span>
@@ -660,8 +818,6 @@ function History({ user }) {
                             {imageName || "Unknown"}
                           </strong>
                         </div>
-
-                        {/* SAVED FILE */}
 
                         <div style={styles.imageDetail}>
                           <span>
@@ -674,8 +830,6 @@ function History({ user }) {
                           </strong>
                         </div>
 
-                        {/* FILE TYPE */}
-
                         <div style={styles.imageDetail}>
                           <span>
                             File Type
@@ -686,8 +840,6 @@ function History({ user }) {
                           </strong>
                         </div>
 
-                        {/* FILE SIZE */}
-
                         <div style={styles.imageDetail}>
                           <span>
                             File Size
@@ -697,8 +849,6 @@ function History({ user }) {
                             {formatFileSize(imageSize)}
                           </strong>
                         </div>
-
-                        {/* DIMENSIONS */}
 
                         <div style={styles.imageDetail}>
                           <span>
@@ -719,7 +869,7 @@ function History({ user }) {
                   </div>
 
                   {/* ==================================================
-                      AI RESULT
+                      AI PREDICTION RESULT
                   ================================================== */}
 
                   <div style={styles.resultBox}>
@@ -729,8 +879,6 @@ function History({ user }) {
                     </h3>
 
                     <div style={styles.resultGrid}>
-
-                      {/* PREDICTION */}
 
                       <div style={styles.resultItem}>
                         <span style={styles.resultLabel}>
@@ -742,8 +890,6 @@ function History({ user }) {
                         </strong>
                       </div>
 
-                      {/* CONFIDENCE */}
-
                       <div style={styles.resultItem}>
                         <span style={styles.resultLabel}>
                           Confidence
@@ -753,8 +899,6 @@ function History({ user }) {
                           {formatPercentage(confidence)}
                         </strong>
                       </div>
-
-                      {/* FEATURES */}
 
                       <div style={styles.resultItem}>
                         <span style={styles.resultLabel}>
@@ -768,17 +912,13 @@ function History({ user }) {
 
                     </div>
 
-                    {/* ==================================================
-                        PROBABILITIES
-                    ================================================== */}
+                    {/* PROBABILITIES */}
 
                     <div style={styles.probabilities}>
 
                       <h4 style={styles.probabilityTitle}>
                         Prediction Probabilities
                       </h4>
-
-                      {/* HIGH */}
 
                       <div style={styles.probabilityRow}>
                         <span>
@@ -792,8 +932,6 @@ function History({ user }) {
                         </strong>
                       </div>
 
-                      {/* MEDIUM */}
-
                       <div style={styles.probabilityRow}>
                         <span>
                           Medium
@@ -805,8 +943,6 @@ function History({ user }) {
                           )}
                         </strong>
                       </div>
-
-                      {/* LOW */}
 
                       <div style={styles.probabilityRow}>
                         <span>
@@ -824,6 +960,433 @@ function History({ user }) {
 
                   </div>
 
+                  {/* ==================================================
+                      AI CONTENT OPTIMIZATION
+                  ================================================== */}
+
+                  {optimization && (
+                    <div style={styles.optimizationSection}>
+
+                      {/* HEADER */}
+
+                      <div style={styles.optimizationHeader}>
+
+                        <div>
+                          <div style={styles.optimizationEyebrow}>
+                            ✨ AI CONTENT OPTIMIZATION
+                          </div>
+
+                          <h3 style={styles.optimizationTitle}>
+                            Content Optimization
+                          </h3>
+
+                          <p style={styles.optimizationSubtitle}>
+                            AI analysis and recommendations
+                            for improving this Instagram post.
+                          </p>
+                        </div>
+
+                        {optimizationScore !== null && (
+                          <div style={styles.scoreCircle}>
+                            <strong>
+                              {optimizationScore}
+                            </strong>
+
+                            <span>
+                              /100
+                            </span>
+                          </div>
+                        )}
+
+                      </div>
+
+                      {/* SCORE */}
+
+                      {optimizationScore !== null && (
+                        <div style={styles.scoreBox}>
+
+                          <div style={styles.scoreTop}>
+                            <span>
+                              Optimization Score
+                            </span>
+
+                            <strong>
+                              {optimizationScore}/100
+                            </strong>
+                          </div>
+
+                          <div style={styles.scoreTrack}>
+                            <div
+                              style={{
+                                ...styles.scoreFill,
+                                width: `${Math.min(
+                                  100,
+                                  Math.max(
+                                    0,
+                                    Number(
+                                      optimizationScore
+                                    ) || 0
+                                  )
+                                )}%`,
+                              }}
+                            />
+                          </div>
+
+                          <p style={styles.scoreDescription}>
+                            {Number(optimizationScore) >= 80
+                              ? "Excellent content optimization."
+                              : Number(optimizationScore) >= 60
+                              ? "Good optimization. A few improvements may increase engagement."
+                              : "Moderate optimization. Consider improving the recommended areas."}
+                          </p>
+
+                        </div>
+                      )}
+
+                      {/* ==================================================
+                          CAPTION ANALYSIS
+                      ================================================== */}
+
+                      <OptimizationPanel
+                        icon="✍️"
+                        title="Caption Analysis"
+                      >
+
+                        <AnalysisRow
+                          label="Character Count"
+                          value={
+                            captionCharacterCount ??
+                            "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Word Count"
+                          value={
+                            captionWordCount ??
+                            "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Has Call To Action"
+                          value={
+                            captionHasCTA !== null &&
+                            captionHasCTA !== undefined
+                              ? captionHasCTA
+                                ? "✓ Yes"
+                                : "✕ No"
+                              : "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Has Emoji"
+                          value={
+                            captionHasEmoji !== null &&
+                            captionHasEmoji !== undefined
+                              ? captionHasEmoji
+                                ? "✓ Yes"
+                                : "✕ No"
+                              : "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Has Question"
+                          value={
+                            captionHasQuestion !== null &&
+                            captionHasQuestion !== undefined
+                              ? captionHasQuestion
+                                ? "✓ Yes"
+                                : "✕ No"
+                              : "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Status"
+                          value={
+                            captionStatus ||
+                            "Not available"
+                          }
+                        />
+
+                        {captionStrengths.length > 0 && (
+                          <AnalysisList
+                            label="Strengths"
+                            items={captionStrengths}
+                          />
+                        )}
+
+                        {captionSuggestions.length > 0 && (
+                          <AnalysisList
+                            label="Suggestions"
+                            items={captionSuggestions}
+                          />
+                        )}
+
+                      </OptimizationPanel>
+
+                      {/* ==================================================
+                          HASHTAG ANALYSIS
+                      ================================================== */}
+
+                      <OptimizationPanel
+                        icon="#️⃣"
+                        title="Hashtag Analysis"
+                      >
+
+                        <AnalysisRow
+                          label="Hashtag Count"
+                          value={
+                            hashtagCount ??
+                            "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Hashtags"
+                          value={
+                            Array.isArray(hashtagList)
+                              ? hashtagList.join(", ")
+                              : hashtagList ||
+                                "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Status"
+                          value={
+                            hashtagStatus ||
+                            "Not available"
+                          }
+                        />
+
+                        {hashtagStrengths.length > 0 && (
+                          <AnalysisList
+                            label="Strengths"
+                            items={hashtagStrengths}
+                          />
+                        )}
+
+                        {hashtagSuggestions.length > 0 && (
+                          <AnalysisList
+                            label="Suggestions"
+                            items={hashtagSuggestions}
+                          />
+                        )}
+
+                      </OptimizationPanel>
+
+                      {/* ==================================================
+                          IMAGE ANALYSIS
+                      ================================================== */}
+
+                      <OptimizationPanel
+                        icon="🖼️"
+                        title="Image Analysis"
+                      >
+
+                        <AnalysisRow
+                          label="Brightness"
+                          value={
+                            typeof imageBrightness === "number"
+                              ? imageBrightness.toFixed(2)
+                              : imageBrightness ??
+                                "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Contrast"
+                          value={
+                            typeof imageContrast === "number"
+                              ? imageContrast.toFixed(2)
+                              : imageContrast ??
+                                "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Sharpness"
+                          value={
+                            typeof imageSharpness === "number"
+                              ? imageSharpness.toFixed(2)
+                              : imageSharpness ??
+                                "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Dimensions"
+                          value={
+                            imageOptimizationWidth &&
+                            imageOptimizationHeight
+                              ? `${imageOptimizationWidth} × ${imageOptimizationHeight}px`
+                              : imageWidth &&
+                                imageHeight
+                              ? `${imageWidth} × ${imageHeight}px`
+                              : "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Status"
+                          value={
+                            imageOptimizationStatus ||
+                            "Not available"
+                          }
+                        />
+
+                        {imageOptimizationStrengths.length > 0 && (
+                          <AnalysisList
+                            label="Strengths"
+                            items={imageOptimizationStrengths}
+                          />
+                        )}
+
+                        {imageOptimizationSuggestions.length > 0 && (
+                          <AnalysisList
+                            label="Suggestions"
+                            items={
+                              imageOptimizationSuggestions
+                            }
+                          />
+                        )}
+
+                      </OptimizationPanel>
+
+                      {/* ==================================================
+                          ACCOUNT ANALYSIS
+                      ================================================== */}
+
+                      <OptimizationPanel
+                        icon="📊"
+                        title="Account Analysis"
+                      >
+
+                        <AnalysisRow
+                          label="Account Type"
+                          value={
+                            accountType ||
+                            "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Activity Level"
+                          value={
+                            accountActivityLevel ??
+                            "Not available"
+                          }
+                        />
+
+                        <AnalysisRow
+                          label="Content Consistency"
+                          value={
+                            accountConsistency ??
+                            "Not available"
+                          }
+                        />
+
+                        {accountStrengths.length > 0 && (
+                          <AnalysisList
+                            label="Strengths"
+                            items={accountStrengths}
+                          />
+                        )}
+
+                        {accountSuggestions.length > 0 && (
+                          <AnalysisList
+                            label="Suggestions"
+                            items={accountSuggestions}
+                          />
+                        )}
+
+                      </OptimizationPanel>
+
+                      {/* ==================================================
+                          OVERALL RECOMMENDATION
+                      ================================================== */}
+
+                      {(overallSuggestions.length > 0 ||
+                        overallStrengths.length > 0) && (
+                        <div style={styles.overallBox}>
+
+                          <h3 style={styles.overallTitle}>
+                            💡 Overall Recommendation
+                          </h3>
+
+                          {overallStrengths.length > 0 && (
+                            <div style={styles.overallGroup}>
+
+                              <strong>
+                                Strengths
+                              </strong>
+
+                              <ul>
+                                {overallStrengths.map(
+                                  (strength, index) => (
+                                    <li key={index}>
+                                      {strength}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+
+                            </div>
+                          )}
+
+                          {overallSuggestions.length > 0 && (
+                            <div style={styles.overallGroup}>
+
+                              <strong>
+                                Suggestions
+                              </strong>
+
+                              <ul>
+                                {overallSuggestions.map(
+                                  (suggestion, index) => (
+                                    <li key={index}>
+                                      {suggestion}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+
+                            </div>
+                          )}
+
+                        </div>
+                      )}
+
+                    </div>
+                  )}
+
+                  {/* ==================================================
+                      NO OPTIMIZATION DATA
+                  ================================================== */}
+
+                  {!optimization && (
+                    <div style={styles.noOptimization}>
+                      <span>
+                        💡
+                      </span>
+
+                      <div>
+                        <strong>
+                          Content Optimization
+                        </strong>
+
+                        <p>
+                          Optimization data is not available
+                          for this older prediction.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               );
             })}
@@ -831,6 +1394,90 @@ function History({ user }) {
         )}
 
       </div>
+    </div>
+  );
+}
+
+// ================================================================
+// REUSABLE OPTIMIZATION PANEL
+// ================================================================
+
+function OptimizationPanel({
+  icon,
+  title,
+  children,
+}) {
+  return (
+    <div style={styles.optimizationPanel}>
+
+      <div style={styles.optimizationPanelHeader}>
+        <span style={styles.optimizationIcon}>
+          {icon}
+        </span>
+
+        <h4>
+          {title}
+        </h4>
+      </div>
+
+      <div style={styles.optimizationPanelBody}>
+        {children}
+      </div>
+
+    </div>
+  );
+}
+
+// ================================================================
+// ANALYSIS ROW
+// ================================================================
+
+function AnalysisRow({
+  label,
+  value,
+}) {
+  return (
+    <div style={styles.analysisRow}>
+
+      <span style={styles.analysisLabel}>
+        {label}
+      </span>
+
+      <strong style={styles.analysisValue}>
+        {value}
+      </strong>
+
+    </div>
+  );
+}
+
+// ================================================================
+// ANALYSIS LIST
+// ================================================================
+
+function AnalysisList({
+  label,
+  items,
+}) {
+  if (!items || items.length === 0) {
+    return null;
+  }
+
+  return (
+    <div style={styles.analysisList}>
+
+      <strong>
+        {label}
+      </strong>
+
+      <ul>
+        {items.map((item, index) => (
+          <li key={index}>
+            {item}
+          </li>
+        ))}
+      </ul>
+
     </div>
   );
 }
@@ -870,6 +1517,7 @@ const styles = {
   subtitle: {
     color: "#94a3b8",
     marginTop: "8px",
+    lineHeight: "1.5",
   },
 
   dashboardButton: {
@@ -1058,10 +1706,6 @@ const styles = {
     opacity: 0.8,
   },
 
-  // ============================================================
-  // IMAGE PREVIEW
-  // ============================================================
-
   previewContainer: {
     marginTop: "15px",
     padding: "15px",
@@ -1087,10 +1731,6 @@ const styles = {
     border: "1px solid #e2e8f0",
   },
 
-  // ============================================================
-  // IMAGE DETAILS
-  // ============================================================
-
   imageDetailsBox: {
     marginTop: "12px",
     display: "grid",
@@ -1111,7 +1751,7 @@ const styles = {
   },
 
   // ============================================================
-  // RESULT
+  // PREDICTION RESULT
   // ============================================================
 
   resultBox: {
@@ -1163,6 +1803,180 @@ const styles = {
     padding: "10px 0",
     borderBottom: "1px solid #e2e8f0",
     color: "#475569",
+  },
+
+  // ============================================================
+  // OPTIMIZATION
+  // ============================================================
+
+  optimizationSection: {
+    marginTop: "30px",
+    padding: "25px",
+    borderRadius: "14px",
+    background: "#ffffff",
+    border: "1px solid #dbeafe",
+    boxShadow: "0 5px 20px rgba(37,99,235,0.08)",
+  },
+
+  optimizationHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "20px",
+    marginBottom: "20px",
+  },
+
+  optimizationEyebrow: {
+    color: "#2563eb",
+    fontSize: "12px",
+    fontWeight: "bold",
+    letterSpacing: "1px",
+    marginBottom: "6px",
+  },
+
+  optimizationTitle: {
+    margin: 0,
+    color: "#0f172a",
+    fontSize: "24px",
+  },
+
+  optimizationSubtitle: {
+    color: "#64748b",
+    marginTop: "7px",
+    marginBottom: 0,
+  },
+
+  scoreCircle: {
+    width: "82px",
+    height: "82px",
+    borderRadius: "50%",
+    border: "5px solid #2563eb",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    color: "#2563eb",
+  },
+
+  scoreCircleStrong: {
+    fontSize: "24px",
+  },
+
+  scoreBox: {
+    background: "#f8fafc",
+    borderRadius: "10px",
+    padding: "16px",
+    marginBottom: "18px",
+  },
+
+  scoreTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    color: "#475569",
+    marginBottom: "10px",
+  },
+
+  scoreTrack: {
+    height: "9px",
+    background: "#e2e8f0",
+    borderRadius: "10px",
+    overflow: "hidden",
+  },
+
+  scoreFill: {
+    height: "100%",
+    background: "#2563eb",
+    borderRadius: "10px",
+    transition: "width 0.3s ease",
+  },
+
+  scoreDescription: {
+    color: "#64748b",
+    fontSize: "13px",
+    marginTop: "10px",
+    marginBottom: 0,
+  },
+
+  optimizationPanel: {
+    border: "1px solid #e2e8f0",
+    borderRadius: "10px",
+    overflow: "hidden",
+    marginTop: "15px",
+    background: "#ffffff",
+  },
+
+  optimizationPanelHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "15px 18px",
+    background: "#f8fafc",
+    borderBottom: "1px solid #e2e8f0",
+  },
+
+  optimizationIcon: {
+    fontSize: "18px",
+  },
+
+  optimizationPanelBody: {
+    padding: "5px 18px 15px",
+  },
+
+  analysisRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "20px",
+    padding: "12px 0",
+    borderBottom: "1px solid #f1f5f9",
+  },
+
+  analysisLabel: {
+    color: "#64748b",
+    fontSize: "14px",
+  },
+
+  analysisValue: {
+    color: "#0f172a",
+    textAlign: "right",
+    maxWidth: "60%",
+    wordBreak: "break-word",
+  },
+
+  analysisList: {
+    padding: "12px 0",
+    color: "#475569",
+  },
+
+  overallBox: {
+    marginTop: "18px",
+    padding: "18px",
+    background: "#eff6ff",
+    border: "1px solid #bfdbfe",
+    borderRadius: "10px",
+  },
+
+  overallTitle: {
+    marginTop: 0,
+    color: "#0f172a",
+  },
+
+  overallGroup: {
+    marginTop: "12px",
+    color: "#475569",
+    lineHeight: "1.6",
+  },
+
+  noOptimization: {
+    marginTop: "25px",
+    padding: "18px",
+    display: "flex",
+    gap: "12px",
+    alignItems: "center",
+    background: "#f8fafc",
+    borderRadius: "10px",
+    color: "#64748b",
   },
 };
 

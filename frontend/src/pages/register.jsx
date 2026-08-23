@@ -3,34 +3,152 @@ import {
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import { auth } from "../firebase";
-import { createUserProfile } from "../services/firestoreService";
+import {
+  createUserProfile,
+} from "../services/firestoreService";
 
 function Register() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // ==========================================================
+  // FORM STATES
+  // ==========================================================
+
+  const [fullName, setFullName] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [dateOfBirth, setDateOfBirth] =
+    useState("");
+
+  const [instagramProfile, setInstagramProfile] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
   const [confirmPassword, setConfirmPassword] =
     useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  // ==========================================================
+  // UI STATES
+  // ==========================================================
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  // ==========================================================
+  // INSTAGRAM URL VALIDATION
+  // ==========================================================
+
+  const isValidInstagramUrl = (url) => {
+    try {
+      const parsedUrl =
+        new URL(url);
+
+      return (
+        parsedUrl.protocol === "https:" &&
+        (
+          parsedUrl.hostname ===
+            "instagram.com" ||
+          parsedUrl.hostname ===
+            "www.instagram.com"
+        )
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  // ==========================================================
+  // REGISTRATION
+  // ==========================================================
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
     setError("");
 
-    // Check password confirmation
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    // ========================================================
+    // VALIDATE FULL NAME
+    // ========================================================
+
+    if (!fullName.trim()) {
+      setError(
+        "Please enter your full name."
+      );
       return;
     }
 
-    // Check password length
+    if (fullName.trim().length < 2) {
+      setError(
+        "Full name must contain at least 2 characters."
+      );
+      return;
+    }
+
+    // ========================================================
+    // VALIDATE DATE OF BIRTH
+    // ========================================================
+
+    if (!dateOfBirth) {
+      setError(
+        "Please enter your date of birth."
+      );
+      return;
+    }
+
+    // ========================================================
+    // VALIDATE INSTAGRAM PROFILE
+    // ========================================================
+
+    if (!instagramProfile.trim()) {
+      setError(
+        "Please enter your Instagram profile link."
+      );
+      return;
+    }
+
+    if (
+      !isValidInstagramUrl(
+        instagramProfile.trim()
+      )
+    ) {
+      setError(
+        "Please enter a valid Instagram profile link, for example: https://www.instagram.com/username/"
+      );
+      return;
+    }
+
+    // ========================================================
+    // CHECK PASSWORD
+    // ========================================================
+
+    if (
+      password !==
+      confirmPassword
+    ) {
+      setError(
+        "Passwords do not match."
+      );
+      return;
+    }
+
+    // ========================================================
+    // CHECK PASSWORD LENGTH
+    // ========================================================
+
     if (password.length < 6) {
       setError(
         "Password must contain at least 6 characters."
@@ -41,72 +159,99 @@ function Register() {
     setLoading(true);
 
     try {
-      // ==========================================
+
+      // ======================================================
       // STEP 1 — CREATE FIREBASE AUTH ACCOUNT
-      // ==========================================
+      // ======================================================
 
       const userCredential =
         await createUserWithEmailAndPassword(
           auth,
-          email,
+          email.trim(),
           password
         );
 
-      const user = userCredential.user;
+      const user =
+        userCredential.user;
 
       console.log(
         "Firebase Authentication account created:",
         user.uid
       );
 
-      // ==========================================
+      // ======================================================
       // STEP 2 — CREATE FIRESTORE USER PROFILE
-      // ==========================================
+      // ======================================================
 
-      await createUserProfile(user);
+      await createUserProfile(
+        user,
+        {
+          fullName:
+            fullName.trim(),
+
+          dateOfBirth:
+            dateOfBirth,
+
+          instagramProfile:
+            instagramProfile.trim(),
+        }
+      );
 
       console.log(
         "Firestore user profile created successfully."
       );
 
-      // ==========================================
+      // ======================================================
       // STEP 3 — GO TO DASHBOARD
-      // ==========================================
+      // ======================================================
 
-      navigate("/dashboard");
+      navigate(
+        "/dashboard"
+      );
 
     } catch (err) {
+
       console.error(
         "Registration error:",
         err
       );
 
       switch (err.code) {
+
         case "auth/email-already-in-use":
+
           setError(
             "An account already exists with this email."
           );
+
           break;
 
         case "auth/invalid-email":
+
           setError(
             "Please enter a valid email address."
           );
+
           break;
 
         case "auth/weak-password":
+
           setError(
             "Password is too weak."
           );
+
           break;
 
         case "auth/network-request-failed":
+
           setError(
             "Network error. Please check your internet connection."
           );
+
           break;
 
         default:
+
           setError(
             err.message ||
             "Registration failed. Please try again."
@@ -114,9 +259,15 @@ function Register() {
       }
 
     } finally {
+
       setLoading(false);
+
     }
   };
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <div style={styles.container}>
@@ -131,7 +282,9 @@ function Register() {
           AI Instagram Prediction
         </p>
 
-        {/* ERROR MESSAGE */}
+        {/* ==================================================
+            ERROR
+        =================================================== */}
 
         {error && (
           <div style={styles.error}>
@@ -139,11 +292,40 @@ function Register() {
           </div>
         )}
 
-        {/* REGISTRATION FORM */}
+        {/* ==================================================
+            REGISTRATION FORM
+        =================================================== */}
 
-        <form onSubmit={handleRegister}>
+        <form
+          onSubmit={
+            handleRegister
+          }
+        >
 
-          {/* EMAIL */}
+          {/* =================================================
+              FULL NAME
+          ================================================= */}
+
+          <label style={styles.label}>
+            Full Name
+          </label>
+
+          <input
+            type="text"
+            placeholder="Enter your full name"
+            value={fullName}
+            onChange={(e) =>
+              setFullName(
+                e.target.value
+              )
+            }
+            required
+            style={styles.input}
+          />
+
+          {/* =================================================
+              EMAIL
+          ================================================= */}
 
           <label style={styles.label}>
             Email
@@ -154,13 +336,62 @@ function Register() {
             placeholder="Enter your email"
             value={email}
             onChange={(e) =>
-              setEmail(e.target.value)
+              setEmail(
+                e.target.value
+              )
             }
             required
             style={styles.input}
           />
 
-          {/* PASSWORD */}
+          {/* =================================================
+              DATE OF BIRTH
+          ================================================= */}
+
+          <label style={styles.label}>
+            Date of Birth
+          </label>
+
+          <input
+            type="date"
+            value={dateOfBirth}
+            onChange={(e) =>
+              setDateOfBirth(
+                e.target.value
+              )
+            }
+            required
+            style={styles.input}
+          />
+
+          {/* =================================================
+              INSTAGRAM PROFILE
+          ================================================= */}
+
+          <label style={styles.label}>
+            Instagram Profile Link
+          </label>
+
+          <input
+            type="url"
+            placeholder="https://www.instagram.com/username/"
+            value={instagramProfile}
+            onChange={(e) =>
+              setInstagramProfile(
+                e.target.value
+              )
+            }
+            required
+            style={styles.input}
+          />
+
+          <small style={styles.helpText}>
+            Example: https://www.instagram.com/username/
+          </small>
+
+          {/* =================================================
+              PASSWORD
+          ================================================= */}
 
           <label style={styles.label}>
             Password
@@ -171,14 +402,18 @@ function Register() {
             placeholder="Create a password"
             value={password}
             onChange={(e) =>
-              setPassword(e.target.value)
+              setPassword(
+                e.target.value
+              )
             }
             required
             minLength={6}
             style={styles.input}
           />
 
-          {/* CONFIRM PASSWORD */}
+          {/* =================================================
+              CONFIRM PASSWORD
+          ================================================= */}
 
           <label style={styles.label}>
             Confirm Password
@@ -189,24 +424,34 @@ function Register() {
             placeholder="Confirm your password"
             value={confirmPassword}
             onChange={(e) =>
-              setConfirmPassword(e.target.value)
+              setConfirmPassword(
+                e.target.value
+              )
             }
             required
             minLength={6}
             style={styles.input}
           />
 
-          {/* REGISTER BUTTON */}
+          {/* =================================================
+              REGISTER BUTTON
+          ================================================= */}
 
           <button
             type="submit"
             disabled={loading}
             style={{
               ...styles.button,
-              opacity: loading ? 0.7 : 1,
-              cursor: loading
-                ? "not-allowed"
-                : "pointer",
+
+              opacity:
+                loading
+                  ? 0.7
+                  : 1,
+
+              cursor:
+                loading
+                  ? "not-allowed"
+                  : "pointer",
             }}
           >
             {loading
@@ -216,7 +461,9 @@ function Register() {
 
         </form>
 
-        {/* LOGIN LINK */}
+        {/* ==================================================
+            LOGIN LINK
+        =================================================== */}
 
         <p style={styles.footer}>
 
@@ -237,6 +484,10 @@ function Register() {
   );
 }
 
+// ============================================================
+// STYLES
+// ============================================================
+
 const styles = {
 
   container: {
@@ -245,12 +496,13 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     background: "#0f172a",
-    fontFamily: "Arial, sans-serif",
+    fontFamily:
+      "Arial, sans-serif",
     padding: "20px",
   },
 
   card: {
-    width: "380px",
+    width: "420px",
     maxWidth: "100%",
     padding: "35px",
     background: "#ffffff",
@@ -287,6 +539,13 @@ const styles = {
     borderRadius: "8px",
     fontSize: "15px",
     outline: "none",
+  },
+
+  helpText: {
+    display: "block",
+    marginTop: "5px",
+    color: "#64748b",
+    fontSize: "12px",
   },
 
   button: {
