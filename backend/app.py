@@ -1,7 +1,9 @@
 # ============================================================
 # AI-BASED INSTAGRAM ENGAGEMENT PREDICTION SYSTEM
 # PRODUCTION FLASK API
+#
 # STAGE 1 - CONTENT OPTIMIZATION INTEGRATION
+# STAGE 2 - ADMIN API INTEGRATION
 #
 # IMAGE STORAGE:
 # Local backend/uploads/ folder
@@ -29,12 +31,12 @@ from werkzeug.utils import secure_filename
 
 
 # ============================================================
-# CONTENT OPTIMIZATION ENGINE
+# FIREBASE ADMIN SDK
 # ============================================================
 
-from services.content_optimizer import (
-    generate_content_optimization
-)
+import firebase_admin
+
+from firebase_admin import credentials
 
 
 # ============================================================
@@ -45,7 +47,76 @@ BACKEND_DIR = Path(__file__).resolve().parent
 
 PROJECT_ROOT = BACKEND_DIR.parent
 
-MODELS_DIR = PROJECT_ROOT / "models"
+
+# ============================================================
+# FIREBASE ADMIN INITIALIZATION
+# ============================================================
+
+FIREBASE_ADMIN_KEY = (
+    BACKEND_DIR /
+    "firebase-admin-key.json"
+)
+
+
+if not firebase_admin._apps:
+
+    if not FIREBASE_ADMIN_KEY.exists():
+
+        raise FileNotFoundError(
+            "Firebase Admin service account file "
+            "was not found:\n"
+            f"{FIREBASE_ADMIN_KEY}\n\n"
+            "Please place firebase-admin-key.json "
+            "inside the backend folder."
+        )
+
+    firebase_credential = (
+        credentials.Certificate(
+            str(FIREBASE_ADMIN_KEY)
+        )
+    )
+
+    firebase_admin.initialize_app(
+        firebase_credential
+    )
+
+    print(
+        "✓ Firebase Admin SDK initialized"
+    )
+
+else:
+
+    print(
+        "✓ Firebase Admin SDK already initialized"
+    )
+
+
+# ============================================================
+# CONTENT OPTIMIZATION ENGINE
+# ============================================================
+
+from services.content_optimizer import (
+    generate_content_optimization
+)
+
+
+# ============================================================
+# ADMIN ROUTES
+# ============================================================
+
+from routes.admin_routes import (
+    admin_bp
+)
+
+
+# ============================================================
+# MODEL PATHS
+# ============================================================
+
+MODELS_DIR = (
+    PROJECT_ROOT /
+    "models"
+)
 
 
 MODEL_FILE = (
@@ -112,6 +183,15 @@ CORS(
 
 app.config["MAX_CONTENT_LENGTH"] = (
     MAX_IMAGE_SIZE_MB * 1024 * 1024
+)
+
+
+# ============================================================
+# REGISTER ADMIN BLUEPRINT
+# ============================================================
+
+app.register_blueprint(
+    admin_bp
 )
 
 
@@ -768,6 +848,10 @@ def health():
         ),
 
         "content_optimization": (
+            "enabled"
+        ),
+
+        "admin_api": (
             "enabled"
         )
     })
@@ -1783,6 +1867,11 @@ if __name__ == "__main__":
 
 
     print(
+        "Admin API: ENABLED"
+    )
+
+
+    print(
         "\nEndpoints:"
     )
 
@@ -1804,6 +1893,31 @@ if __name__ == "__main__":
 
     print(
         "GET  /uploads/<filename>"
+    )
+
+
+    print(
+        "\nADMIN ENDPOINTS:"
+    )
+
+
+    print(
+        "GET    /api/admin/health"
+    )
+
+
+    print(
+        "GET    /api/admin/users"
+    )
+
+
+    print(
+        "GET    /api/admin/users/<uid>"
+    )
+
+
+    print(
+        "DELETE /api/admin/users/<uid>"
     )
 
 

@@ -4,9 +4,19 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 
-import { auth } from "./firebase";
+import {
+  doc,
+  getDoc,
+} from "firebase/firestore";
+
+import { auth, db } from "./firebase";
+
+// ==========================================================
+// PAGES
+// ==========================================================
 
 import Login from "./pages/login";
 import Register from "./pages/register";
@@ -14,164 +24,401 @@ import Dashboard from "./pages/dashboard";
 import Prediction from "./pages/prediction";
 import History from "./pages/history";
 import Reminders from "./pages/reminders";
+import AdminDashboard from "./pages/adminDashboard";
+
+// ==========================================================
+// COMPONENTS
+// ==========================================================
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+// ==========================================================
+// CHECK WHETHER USER IS ADMIN
+// ==========================================================
 
-  // ==========================================================
-  // FIREBASE AUTHENTICATION LISTENER
-  // ==========================================================
+async function checkAdminStatus(user) {
+  if (!user) {
+    return false;
+  }
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (currentUser) => {
-        setUser(currentUser);
-        setLoading(false);
-      }
+  try {
+    const userRef = doc(
+      db,
+      "users",
+      user.uid
     );
 
+    const snapshot = await getDoc(userRef);
+
+    if (!snapshot.exists()) {
+      return false;
+    }
+
+    const userData = snapshot.data();
+
+    return userData.admin === true;
+
+  } catch (error) {
+
+    console.error(
+      "Failed to check admin status:",
+      error
+    );
+
+    return false;
+  }
+}
+
+// ==========================================================
+// APP
+// ==========================================================
+
+function App() {
+
+  const [user, setUser] = useState(null);
+
+  const [isAdmin, setIsAdmin] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [checkingRole, setCheckingRole] =
+    useState(true);
+
+
+  // ========================================================
+  // FIREBASE AUTHENTICATION LISTENER
+  // ========================================================
+
+  useEffect(() => {
+
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        async (currentUser) => {
+
+          setUser(currentUser);
+
+          if (!currentUser) {
+
+            setIsAdmin(false);
+
+            setCheckingRole(false);
+
+            setLoading(false);
+
+            return;
+          }
+
+          // --------------------------------------------------
+          // CHECK FIRESTORE ADMIN ROLE
+          // --------------------------------------------------
+
+          setCheckingRole(true);
+
+          const adminStatus =
+            await checkAdminStatus(
+              currentUser
+            );
+
+          setIsAdmin(adminStatus);
+
+          setCheckingRole(false);
+
+          setLoading(false);
+        }
+      );
+
+
     return () => unsubscribe();
+
   }, []);
 
-  // ==========================================================
-  // AUTHENTICATION LOADING
-  // ==========================================================
 
-  if (loading) {
+  // ========================================================
+  // LOADING SCREEN
+  // ========================================================
+
+  if (
+    loading ||
+    checkingRole
+  ) {
+
     return (
+
       <div
         style={{
           minHeight: "100vh",
+
           display: "flex",
+
           alignItems: "center",
+
           justifyContent: "center",
+
           background: "#0f172a",
+
           color: "#ffffff",
-          fontFamily: "Arial, sans-serif",
+
+          fontFamily:
+            "Arial, sans-serif",
         }}
       >
-        <h2>Loading...</h2>
+
+        <h2>
+          Loading...
+        </h2>
+
       </div>
+
     );
   }
 
-  // ==========================================================
+
+  // ========================================================
   // APPLICATION ROUTES
-  // ==========================================================
+  // ========================================================
 
   return (
+
     <BrowserRouter>
+
       <Routes>
 
-        {/* ====================================================
+        {/* ==================================================
             HOME
-        ==================================================== */}
+        ================================================== */}
 
         <Route
           path="/"
           element={
             user ? (
-              <Dashboard user={user} />
+
+              isAdmin ? (
+
+                <Navigate
+                  to="/admin"
+                  replace
+                />
+
+              ) : (
+
+                <Navigate
+                  to="/dashboard"
+                  replace
+                />
+
+              )
+
             ) : (
-              <Login />
+
+              <Navigate
+                to="/login"
+                replace
+              />
+
             )
           }
         />
 
 
-        {/* ====================================================
+        {/* ==================================================
             LOGIN
-        ==================================================== */}
+        ================================================== */}
 
         <Route
           path="/login"
           element={
+
             user ? (
-              <Dashboard user={user} />
+
+              isAdmin ? (
+
+                <Navigate
+                  to="/admin"
+                  replace
+                />
+
+              ) : (
+
+                <Navigate
+                  to="/dashboard"
+                  replace
+                />
+
+              )
+
             ) : (
+
               <Login />
+
             )
+
           }
         />
 
 
-        {/* ====================================================
-            REGISTRATION
-        ==================================================== */}
+        {/* ==================================================
+            REGISTER
+        ================================================== */}
 
         <Route
           path="/register"
           element={
+
             user ? (
-              <Dashboard user={user} />
+
+              isAdmin ? (
+
+                <Navigate
+                  to="/admin"
+                  replace
+                />
+
+              ) : (
+
+                <Navigate
+                  to="/dashboard"
+                  replace
+                />
+
+              )
+
             ) : (
+
               <Register />
+
             )
+
           }
         />
 
 
-        {/* ====================================================
-            DASHBOARD
-        ==================================================== */}
+        {/* ==================================================
+            USER DASHBOARD
+        ================================================== */}
 
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute user={user}>
-              <Dashboard user={user} />
+
+            <ProtectedRoute
+              user={user}
+            >
+
+              <Dashboard
+                user={user}
+              />
+
             </ProtectedRoute>
+
           }
         />
 
 
-        {/* ====================================================
-            AI ENGAGEMENT PREDICTION
-        ==================================================== */}
+        {/* ==================================================
+            AI PREDICTION
+        ================================================== */}
 
         <Route
           path="/prediction"
           element={
-            <ProtectedRoute user={user}>
-              <Prediction user={user} />
+
+            <ProtectedRoute
+              user={user}
+            >
+
+              <Prediction
+                user={user}
+              />
+
             </ProtectedRoute>
+
           }
         />
 
 
-        {/* ====================================================
+        {/* ==================================================
             PREDICTION HISTORY
-        ==================================================== */}
+        ================================================== */}
 
         <Route
           path="/history"
           element={
-            <ProtectedRoute user={user}>
-              <History user={user} />
+
+            <ProtectedRoute
+              user={user}
+            >
+
+              <History
+                user={user}
+              />
+
             </ProtectedRoute>
+
           }
         />
 
 
-        {/* ====================================================
-            INSTAGRAM POST REMINDERS
-        ==================================================== */}
+        {/* ==================================================
+            REMINDERS
+        ================================================== */}
 
         <Route
           path="/reminders"
           element={
-            <ProtectedRoute user={user}>
-              <Reminders user={user} />
+
+            <ProtectedRoute
+              user={user}
+            >
+
+              <Reminders
+                user={user}
+              />
+
             </ProtectedRoute>
+
+          }
+        />
+
+
+        {/* ==================================================
+            ADMIN DASHBOARD
+        ================================================== */}
+
+        <Route
+          path="/admin"
+          element={
+
+            <ProtectedRoute
+              user={user}
+            >
+
+              {isAdmin ? (
+
+                <AdminDashboard
+                  user={user}
+                />
+
+              ) : (
+
+                <Navigate
+                  to="/dashboard"
+                  replace
+                />
+
+              )}
+
+            </ProtectedRoute>
+
           }
         />
 
       </Routes>
+
     </BrowserRouter>
+
   );
 }
 

@@ -245,3 +245,6 @@ firebase-debug.log
 # *.mp3
 # *.psd
 # *.zip
+
+backend/firebase-admin-key.json
+backend/*firebase-adminsdk*.json
