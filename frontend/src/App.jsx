@@ -25,6 +25,7 @@ import Prediction from "./pages/prediction";
 import History from "./pages/history";
 import Reminders from "./pages/reminders";
 import AdminDashboard from "./pages/adminDashboard";
+import Home from "./pages/home";
 
 // ==========================================================
 // COMPONENTS
@@ -157,9 +158,9 @@ function App() {
 
           justifyContent: "center",
 
-          background: "#0f172a",
+          background: "#ffffff",
 
-          color: "#ffffff",
+          color: "#0f172a",
 
           fontFamily:
             "Arial, sans-serif",
@@ -213,10 +214,7 @@ function App() {
 
             ) : (
 
-              <Navigate
-                to="/login"
-                replace
-              />
+              <Home />
 
             )
           }

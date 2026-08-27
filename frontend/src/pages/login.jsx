@@ -1,522 +1,186 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, Sparkles, ArrowRight } from "lucide-react";
+import logo from "../assets/logo.png";
 
-import {
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore";
-
-import {
-  Link,
-  useNavigate,
-} from "react-router-dom";
-
-import {
-  auth,
-  db,
-} from "../firebase";
+import { auth, db } from "../firebase";
+import Button from "../components/Button";
+import Card, { CardContent } from "../components/Card";
 
 function Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-
-  // ==========================================================
-  // HANDLE LOGIN
-  // ==========================================================
-
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setError("");
     setLoading(true);
 
     try {
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const user = userCredential.user;
 
-      // ======================================================
-      // STEP 1 — FIREBASE AUTHENTICATION
-      // ======================================================
-
-      const userCredential =
-        await signInWithEmailAndPassword(
-          auth,
-          email.trim(),
-          password
-        );
-
-      const user =
-        userCredential.user;
-
-      console.log(
-        "Firebase login successful:",
-        user.email
-      );
-
-      console.log(
-        "Firebase UID:",
-        user.uid
-      );
-
-
-      // ======================================================
-      // STEP 2 — GET USER PROFILE FROM FIRESTORE
-      // ======================================================
-
-      const userRef = doc(
-        db,
-        "users",
-        user.uid
-      );
-
-      const userSnapshot =
-        await getDoc(userRef);
-
-
-      // ======================================================
-      // STEP 3 — CHECK WHETHER PROFILE EXISTS
-      // ======================================================
+      const userRef = doc(db, "users", user.uid);
+      const userSnapshot = await getDoc(userRef);
 
       if (!userSnapshot.exists()) {
-
-        console.warn(
-          "Firestore user profile not found."
-        );
-
-        // If there is no profile, treat as normal user
-        navigate(
-          "/dashboard",
-          {
-            replace: true,
-          }
-        );
-
+        navigate("/dashboard", { replace: true });
         return;
       }
 
-
-      // ======================================================
-      // STEP 4 — GET USER DATA
-      // ======================================================
-
-      const userData =
-        userSnapshot.data();
-
-      console.log(
-        "Firestore user data:",
-        userData
-      );
-
-
-      // ======================================================
-      // STEP 5 — CHECK ADMIN ROLE
-      // ======================================================
-
-      const isAdmin =
-        userData.admin === true;
-
-
-      console.log(
-        "Admin status:",
-        isAdmin
-      );
-
-
-      // ======================================================
-      // STEP 6 — REDIRECT BASED ON ROLE
-      // ======================================================
+      const userData = userSnapshot.data();
+      const isAdmin = userData.admin === true;
 
       if (isAdmin) {
-
-        console.log(
-          "Admin detected. Redirecting to admin dashboard."
-        );
-
-        navigate(
-          "/admin",
-          {
-            replace: true,
-          }
-        );
-
+        navigate("/admin", { replace: true });
       } else {
-
-        console.log(
-          "Normal user detected. Redirecting to user dashboard."
-        );
-
-        navigate(
-          "/dashboard",
-          {
-            replace: true,
-          }
-        );
+        navigate("/dashboard", { replace: true });
       }
 
     } catch (err) {
-
-      console.error(
-        "Login error:",
-        err
-      );
-
-
-      // ======================================================
-      // FIREBASE AUTH ERRORS
-      // ======================================================
-
+      console.error("Login error:", err);
       switch (err.code) {
-
         case "auth/invalid-credential":
-
-          setError(
-            "Invalid email or password."
-          );
-
-          break;
-
-
         case "auth/user-not-found":
-
-          setError(
-            "No account found with this email."
-          );
-
-          break;
-
-
         case "auth/wrong-password":
-
-          setError(
-            "Incorrect password."
-          );
-
+          setError("Invalid email or password.");
           break;
-
-
         case "auth/invalid-email":
-
-          setError(
-            "Please enter a valid email address."
-          );
-
+          setError("Please enter a valid email address.");
           break;
-
-
         case "auth/too-many-requests":
-
-          setError(
-            "Too many login attempts. Please try again later."
-          );
-
+          setError("Too many login attempts. Please try again later.");
           break;
-
-
         case "auth/network-request-failed":
-
-          setError(
-            "Network error. Please check your internet connection."
-          );
-
+          setError("Network error. Please check your internet connection.");
           break;
-
-
         default:
-
-          setError(
-            err.message ||
-            "Login failed. Please try again."
-          );
+          setError(err.message || "Login failed. Please try again.");
       }
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
-
-  // ==========================================================
-  // UI
-  // ==========================================================
-
   return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'var(--bg-primary)',
+      backgroundImage: 'radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 40%), radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.15), transparent 40%)',
+      padding: '1.5rem'
+    }}>
+      <div style={{ width: '100%', maxWidth: '420px', zIndex: 10 }}>
+        
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <img src={logo} alt="Logo" style={{ height: '64px', width: 'auto', objectFit: 'contain', marginBottom: '1rem' }} />
+          <h1 style={{ fontSize: '1.875rem', fontWeight: '700', margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
+            Welcome Back
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+            Sign in to your AI Instagram Predictor
+          </p>
+        </div>
 
-    <div style={styles.container}>
+        <Card style={{ backgroundColor: 'var(--bg-secondary)', backdropFilter: 'blur(12px)', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-md)' }}>
+          <CardContent style={{ padding: '2.5rem 2rem' }}>
+            
+            {error && (
+              <div style={{ padding: '1rem', marginBottom: '1.5rem', backgroundColor: 'var(--error-bg)', color: 'var(--error)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(239, 68, 68, 0.2)', fontSize: '0.875rem' }}>
+                {error}
+              </div>
+            )}
 
-      <div style={styles.card}>
+            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem 0.75rem 2.75rem',
+                      backgroundColor: 'var(--bg-primary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+              </div>
 
-        <h1 style={styles.title}>
-          AI Instagram Prediction
-        </h1>
+              <div>
+                <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+                  Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem 0.75rem 2.75rem',
+                      backgroundColor: 'var(--bg-primary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+              </div>
 
-        <p style={styles.subtitle}>
-          Sign in to your account
-        </p>
+              <Button 
+                variant="primary" 
+                type="submit" 
+                disabled={loading} 
+                style={{ width: '100%', marginTop: '0.5rem', padding: '0.875rem', fontSize: '1rem', display: 'flex', justifyContent: 'center' }}
+              >
+                {loading ? "Signing in..." : (
+                  <>Sign In <ArrowRight size={18} style={{ marginLeft: '0.5rem' }} /></>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-
-        {/* ==================================================
-            ERROR MESSAGE
-        ================================================== */}
-
-        {error && (
-
-          <div style={styles.error}>
-
-            {error}
-
-          </div>
-
-        )}
-
-
-        {/* ==================================================
-            LOGIN FORM
-        ================================================== */}
-
-        <form
-          onSubmit={handleLogin}
-        >
-
-          {/* EMAIL */}
-
-          <label style={styles.label}>
-            Email
-          </label>
-
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-            required
-            style={styles.input}
-            disabled={loading}
-          />
-
-
-          {/* PASSWORD */}
-
-          <label style={styles.label}>
-            Password
-          </label>
-
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-            required
-            style={styles.input}
-            disabled={loading}
-          />
-
-
-          {/* LOGIN BUTTON */}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              ...styles.button,
-
-              opacity:
-                loading ? 0.7 : 1,
-
-              cursor:
-                loading
-                  ? "not-allowed"
-                  : "pointer",
-            }}
-          >
-
-            {loading
-              ? "Signing in..."
-              : "Sign In"}
-
-          </button>
-
-        </form>
-
-
-        {/* ==================================================
-            REGISTER LINK
-        ================================================== */}
-
-        <p style={styles.footer}>
-
+        <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
           Don't have an account?{" "}
-
-          <Link
-            to="/register"
-            style={styles.link}
-          >
+          <Link to="/register" style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: '600' }}>
             Create Account
           </Link>
-
         </p>
 
       </div>
-
     </div>
-
   );
 }
-
-
-// ============================================================
-// STYLES
-// ============================================================
-
-const styles = {
-
-  container: {
-    minHeight: "100vh",
-
-    display: "flex",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    background: "#0f172a",
-
-    fontFamily:
-      "Arial, sans-serif",
-
-    padding: "20px",
-  },
-
-
-  card: {
-    width: "380px",
-
-    maxWidth: "100%",
-
-    padding: "35px",
-
-    background: "#ffffff",
-
-    borderRadius: "16px",
-
-    boxShadow:
-      "0 20px 50px rgba(0,0,0,0.3)",
-  },
-
-
-  title: {
-    margin: "0",
-
-    fontSize: "28px",
-
-    color: "#0f172a",
-  },
-
-
-  subtitle: {
-    color: "#64748b",
-
-    marginBottom: "25px",
-  },
-
-
-  label: {
-    display: "block",
-
-    marginBottom: "7px",
-
-    marginTop: "15px",
-
-    fontWeight: "600",
-
-    color: "#334155",
-  },
-
-
-  input: {
-    width: "100%",
-
-    boxSizing: "border-box",
-
-    padding: "12px",
-
-    border:
-      "1px solid #cbd5e1",
-
-    borderRadius: "8px",
-
-    fontSize: "15px",
-
-    outline: "none",
-  },
-
-
-  button: {
-    width: "100%",
-
-    padding: "13px",
-
-    marginTop: "25px",
-
-    border: "none",
-
-    borderRadius: "8px",
-
-    background: "#2563eb",
-
-    color: "#ffffff",
-
-    fontSize: "16px",
-
-    fontWeight: "600",
-  },
-
-
-  error: {
-    padding: "12px",
-
-    marginBottom: "15px",
-
-    background: "#fee2e2",
-
-    color: "#b91c1c",
-
-    borderRadius: "8px",
-
-    fontSize: "14px",
-  },
-
-
-  footer: {
-    marginTop: "20px",
-
-    textAlign: "center",
-
-    color: "#64748b",
-  },
-
-
-  link: {
-    color: "#2563eb",
-
-    textDecoration: "none",
-
-    fontWeight: "600",
-  },
-
-};
-
 
 export default Login;

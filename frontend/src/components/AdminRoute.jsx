@@ -97,8 +97,8 @@ function AdminRoute({ user, children }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0f172a",
-          color: "#ffffff",
+          background: "#ffffff",
+          color: "#0f172a",
           fontFamily: "Arial, sans-serif",
         }}
       >

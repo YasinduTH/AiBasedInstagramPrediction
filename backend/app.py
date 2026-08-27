@@ -2,12 +2,23 @@
 # AI-BASED INSTAGRAM ENGAGEMENT PREDICTION SYSTEM
 # PRODUCTION FLASK API
 #
-# STAGE 1 - CONTENT OPTIMIZATION INTEGRATION
-# STAGE 2 - ADMIN API INTEGRATION
+# FINAL MODEL INTEGRATION
+# ------------------------------------------------------------
+# Model:
+#   Tuned HistGradient Boosting
 #
-# IMAGE STORAGE:
-# Local backend/uploads/ folder
-# No Firebase Storage required
+# Production features:
+#   56 features
+#
+# Image storage:
+#   Local backend/uploads/
+#
+# Firebase:
+#   Firebase Admin SDK
+#
+# Additional services:
+#   Content Optimization
+#   Admin API
 # ============================================================
 
 import json
@@ -35,7 +46,6 @@ from werkzeug.utils import secure_filename
 # ============================================================
 
 import firebase_admin
-
 from firebase_admin import credentials
 
 
@@ -44,8 +54,9 @@ from firebase_admin import credentials
 # ============================================================
 
 BACKEND_DIR = Path(__file__).resolve().parent
-
 PROJECT_ROOT = BACKEND_DIR.parent
+
+MODELS_DIR = PROJECT_ROOT / "models"
 
 
 # ============================================================
@@ -70,10 +81,8 @@ if not firebase_admin._apps:
             "inside the backend folder."
         )
 
-    firebase_credential = (
-        credentials.Certificate(
-            str(FIREBASE_ADMIN_KEY)
-        )
+    firebase_credential = credentials.Certificate(
+        str(FIREBASE_ADMIN_KEY)
     )
 
     firebase_admin.initialize_app(
@@ -110,30 +119,34 @@ from routes.admin_routes import (
 
 
 # ============================================================
-# MODEL PATHS
+# PRODUCTION MODEL FILES
 # ============================================================
 
-MODELS_DIR = (
-    PROJECT_ROOT /
-    "models"
-)
-
-
+# NEW FINAL MODEL
 MODEL_FILE = (
     MODELS_DIR /
-    "final_instagram_engagement_model.joblib"
+    "instagram_engagement_model.joblib"
 )
 
 
+# Flask-compatible feature schema
 FEATURE_FILE = (
     MODELS_DIR /
     "final_model_features.json"
 )
 
 
+# Flask-compatible model metadata
 METADATA_FILE = (
     MODELS_DIR /
     "final_model_metadata.json"
+)
+
+
+# Backup schema created by model-selection notebook
+JOBLIB_FEATURE_FILE = (
+    MODELS_DIR /
+    "feature_schema.joblib"
 )
 
 
@@ -207,23 +220,29 @@ METADATA = None
 
 FEATURE_MAPPER = None
 
+PRODUCTION_FEATURES = []
+
+CATEGORICAL_FEATURES = []
+
+NUMERIC_FEATURES = []
+
+
+# ============================================================
+# APPLICATION STARTUP
+# ============================================================
+
+print()
+print("=" * 70)
+print("AI INSTAGRAM ENGAGEMENT PREDICTION API")
+print("=" * 70)
+
 
 # ============================================================
 # LOAD FEATURE MAPPER
 # ============================================================
 
-print("=" * 70)
-
-print(
-    "AI INSTAGRAM PREDICTION API"
-)
-
-print("=" * 70)
-
-
-print(
-    "\nLoading feature mapper..."
-)
+print()
+print("Loading feature mapper...")
 
 
 try:
@@ -258,7 +277,7 @@ except Exception as error:
     )
 
     print(
-        error
+        repr(error)
     )
 
     raise
@@ -268,29 +287,60 @@ except Exception as error:
 # LOAD FEATURE SCHEMA
 # ============================================================
 
-print(
-    "\nLoading feature schema..."
-)
+print()
+print("Loading feature schema...")
 
 
-if not FEATURE_FILE.exists():
+# ------------------------------------------------------------
+# PRIMARY: JSON FEATURE SCHEMA
+# ------------------------------------------------------------
+
+if FEATURE_FILE.exists():
+
+    with open(
+        FEATURE_FILE,
+        "r",
+        encoding="utf-8"
+    ) as file:
+
+        FEATURE_SCHEMA = json.load(
+            file
+        )
+
+    print(
+        "✓ JSON feature schema loaded"
+    )
+
+
+# ------------------------------------------------------------
+# FALLBACK: JOBLIB FEATURE SCHEMA
+# ------------------------------------------------------------
+
+elif JOBLIB_FEATURE_FILE.exists():
+
+    FEATURE_SCHEMA = joblib.load(
+        JOBLIB_FEATURE_FILE
+    )
+
+    print(
+        "✓ Joblib feature schema loaded"
+    )
+
+
+else:
 
     raise FileNotFoundError(
-        f"Feature schema not found:\n"
-        f"{FEATURE_FILE}"
+        "No production feature schema found.\n\n"
+        f"Expected either:\n"
+        f"  {FEATURE_FILE}\n"
+        f"or:\n"
+        f"  {JOBLIB_FEATURE_FILE}"
     )
 
 
-with open(
-    FEATURE_FILE,
-    "r",
-    encoding="utf-8"
-) as file:
-
-    FEATURE_SCHEMA = json.load(
-        file
-    )
-
+# ============================================================
+# EXTRACT FEATURE LIST
+# ============================================================
 
 PRODUCTION_FEATURES = (
     FEATURE_SCHEMA.get(
@@ -299,6 +349,24 @@ PRODUCTION_FEATURES = (
     )
 )
 
+
+# ------------------------------------------------------------
+# FALLBACK IF all_features DOES NOT EXIST
+# ------------------------------------------------------------
+
+if not PRODUCTION_FEATURES:
+
+    PRODUCTION_FEATURES = (
+        FEATURE_SCHEMA.get(
+            "expected_features",
+            []
+        )
+    )
+
+
+# ------------------------------------------------------------
+# SECOND FALLBACK
+# ------------------------------------------------------------
 
 if not PRODUCTION_FEATURES:
 
@@ -315,110 +383,14 @@ if not PRODUCTION_FEATURES:
     )
 
 
-print(
-    "✓ Feature schema loaded"
-)
+# ------------------------------------------------------------
+# VALIDATE FEATURE SCHEMA
+# ------------------------------------------------------------
 
-
-# ============================================================
-# LOAD MODEL METADATA
-# ============================================================
-
-print(
-    "\nLoading model metadata..."
-)
-
-
-if not METADATA_FILE.exists():
-
-    raise FileNotFoundError(
-        f"Metadata not found:\n"
-        f"{METADATA_FILE}"
-    )
-
-
-with open(
-    METADATA_FILE,
-    "r",
-    encoding="utf-8"
-) as file:
-
-    METADATA = json.load(
-        file
-    )
-
-
-print(
-    "✓ Metadata loaded"
-)
-
-
-# ============================================================
-# LOAD PRODUCTION MODEL
-# ============================================================
-
-print(
-    "\nLoading production model..."
-)
-
-
-if not MODEL_FILE.exists():
-
-    raise FileNotFoundError(
-        f"Production model not found:\n"
-        f"{MODEL_FILE}"
-    )
-
-
-MODEL = joblib.load(
-    MODEL_FILE
-)
-
-
-print(
-    "✓ Production model loaded"
-)
-
-
-# ============================================================
-# FEATURE SCHEMA VALIDATION
-# ============================================================
-
-print(
-    "\n" + "=" * 70
-)
-
-print(
-    "FEATURE SCHEMA VALIDATION"
-)
-
-print(
-    "=" * 70
-)
-
-
-EXPECTED_FEATURE_COUNT = 56
-
-
-if len(PRODUCTION_FEATURES) != (
-    EXPECTED_FEATURE_COUNT
-):
+if not PRODUCTION_FEATURES:
 
     raise ValueError(
-        "Production feature schema must "
-        f"contain exactly "
-        f"{EXPECTED_FEATURE_COUNT} "
-        f"features, found "
-        f"{len(PRODUCTION_FEATURES)}"
-    )
-
-
-if len(set(PRODUCTION_FEATURES)) != len(
-    PRODUCTION_FEATURES
-):
-
-    raise ValueError(
-        "Duplicate production features found."
+        "Production feature schema is empty."
     )
 
 
@@ -439,13 +411,54 @@ NUMERIC_FEATURES = (
 
 
 print(
-    f"\nTotal features: "
+    f"✓ Production features loaded: "
+    f"{len(PRODUCTION_FEATURES)}"
+)
+
+
+# ============================================================
+# FEATURE SCHEMA VALIDATION
+# ============================================================
+
+print()
+print("=" * 70)
+print("FEATURE SCHEMA VALIDATION")
+print("=" * 70)
+
+
+EXPECTED_FEATURE_COUNT = 56
+
+
+if len(PRODUCTION_FEATURES) != (
+    EXPECTED_FEATURE_COUNT
+):
+
+    raise ValueError(
+        "Production feature schema must "
+        f"contain exactly "
+        f"{EXPECTED_FEATURE_COUNT} "
+        f"features, found "
+        f"{len(PRODUCTION_FEATURES)}"
+    )
+
+
+if len(set(PRODUCTION_FEATURES)) != (
+    len(PRODUCTION_FEATURES)
+):
+
+    raise ValueError(
+        "Duplicate production features found."
+    )
+
+
+print(
+    f"Total features      : "
     f"{len(PRODUCTION_FEATURES)}"
 )
 
 
 print(
-    f"Numeric features: "
+    f"Numeric features    : "
     f"{len(NUMERIC_FEATURES)}"
 )
 
@@ -457,8 +470,151 @@ print(
 
 
 print(
-    "✓ Exactly 56 unique features"
+    "✓ Exactly 56 unique production features"
 )
+
+
+# ============================================================
+# LOAD MODEL METADATA
+# ============================================================
+
+print()
+print("Loading model metadata...")
+
+
+if METADATA_FILE.exists():
+
+    with open(
+        METADATA_FILE,
+        "r",
+        encoding="utf-8"
+    ) as file:
+
+        METADATA = json.load(
+            file
+        )
+
+    print(
+        "✓ Model metadata loaded"
+    )
+
+
+else:
+
+    # --------------------------------------------------------
+    # FALLBACK METADATA
+    # --------------------------------------------------------
+
+    METADATA = {
+
+        "project_name":
+            "AI-Based Instagram Engagement Prediction System",
+
+        "model_name":
+            "Tuned HistGradient Boosting",
+
+        "model_type":
+            "HistGradientBoostingClassifier",
+
+        "target_column":
+            "performance_class",
+
+        "target_classes":
+            [
+                "High",
+                "Low",
+                "Medium"
+            ],
+
+        "feature_count":
+            56
+    }
+
+
+    print(
+        "⚠ Metadata JSON not found."
+    )
+
+    print(
+        "✓ Default model metadata created."
+    )
+
+
+# ============================================================
+# LOAD FINAL PRODUCTION MODEL
+# ============================================================
+
+print()
+print("Loading final production model...")
+
+
+if not MODEL_FILE.exists():
+
+    raise FileNotFoundError(
+        "Final production model not found:\n"
+        f"{MODEL_FILE}\n\n"
+        "Make sure the model-selection notebook "
+        "saved instagram_engagement_model.joblib "
+        "inside the models folder."
+    )
+
+
+MODEL = joblib.load(
+    MODEL_FILE
+)
+
+
+print(
+    "✓ Final production model loaded"
+)
+
+
+print(
+    f"  Model type: "
+    f"{type(MODEL).__name__}"
+)
+
+
+# ============================================================
+# MODEL VALIDATION
+# ============================================================
+
+print()
+print("=" * 70)
+print("MODEL VALIDATION")
+print("=" * 70)
+
+
+if not hasattr(
+    MODEL,
+    "predict"
+):
+
+    raise TypeError(
+        "Loaded model does not provide "
+        "a predict() method."
+    )
+
+
+print(
+    "✓ Model provides predict()"
+)
+
+
+if hasattr(
+    MODEL,
+    "predict_proba"
+):
+
+    print(
+        "✓ Model provides predict_proba()"
+    )
+
+else:
+
+    print(
+        "⚠ Model does not provide predict_proba()"
+    )
 
 
 # ============================================================
@@ -530,39 +686,6 @@ def safe_bool(
         "yes",
         "on"
     }
-
-
-def get_form_value(
-    name,
-    default=None
-):
-
-    value = request.form.get(
-        name
-    )
-
-
-    if value is None:
-
-        return default
-
-
-    return value
-
-
-def get_json_value(
-    data,
-    name,
-    default=None
-):
-
-    value = data.get(
-        name,
-        default
-    )
-
-
-    return value
 
 
 def validate_required_text(
@@ -755,23 +878,16 @@ def save_uploaded_image():
     )
 
 
+    print()
+    print("✓ Image saved")
     print(
-        "\n✓ Image saved:"
+        f"  Original: {original_filename}"
     )
-
     print(
-        f"  Original: "
-        f"{original_filename}"
+        f"  Saved:    {saved_filename}"
     )
-
     print(
-        f"  Saved: "
-        f"{saved_filename}"
-    )
-
-    print(
-        f"  Size: "
-        f"{file_size} bytes"
+        f"  Size:     {file_size} bytes"
     )
 
 
@@ -828,32 +944,34 @@ def health():
 
     return jsonify({
 
-        "success": True,
+        "success":
+            True,
 
-        "status": "healthy",
+        "status":
+            "healthy",
 
-        "model": (
+        "model":
             METADATA.get(
                 "model_name",
                 type(MODEL).__name__
-            )
-        ),
+            ),
 
-        "features": len(
-            PRODUCTION_FEATURES
-        ),
+        "model_type":
+            type(MODEL).__name__,
 
-        "image_storage": (
-            "local_backend_uploads"
-        ),
+        "features":
+            len(
+                PRODUCTION_FEATURES
+            ),
 
-        "content_optimization": (
+        "image_storage":
+            "local_backend_uploads",
+
+        "content_optimization":
+            "enabled",
+
+        "admin_api":
             "enabled"
-        ),
-
-        "admin_api": (
-            "enabled"
-        )
     })
 
 
@@ -869,57 +987,67 @@ def model_info():
 
     return jsonify({
 
-        "success": True,
+        "success":
+            True,
 
-        "project_name": (
+        "project_name":
             METADATA.get(
                 "project_name"
-            )
-        ),
+            ),
 
-        "dataset_name": (
+        "dataset_name":
             METADATA.get(
                 "dataset_name"
-            )
-        ),
+            ),
 
-        "model_name": (
+        "model_name":
             METADATA.get(
-                "model_name"
-            )
-        ),
+                "model_name",
+                type(MODEL).__name__
+            ),
 
-        "target_column": (
+        "model_type":
             METADATA.get(
-                "target_column"
-            )
-        ),
+                "model_type",
+                type(MODEL).__name__
+            ),
 
-        "target_classes": (
+        "target_column":
             METADATA.get(
-                "target_classes"
-            )
-        ),
+                "target_column",
+                "performance_class"
+            ),
 
-        "feature_count": len(
-            PRODUCTION_FEATURES
-        ),
+        "target_classes":
+            METADATA.get(
+                "target_classes",
+                [
+                    "High",
+                    "Low",
+                    "Medium"
+                ]
+            ),
 
-        "numeric_features": len(
-            NUMERIC_FEATURES
-        ),
+        "feature_count":
+            len(
+                PRODUCTION_FEATURES
+            ),
 
-        "categorical_features": len(
-            CATEGORICAL_FEATURES
-        ),
+        "numeric_features":
+            len(
+                NUMERIC_FEATURES
+            ),
 
-        "image_storage": (
-            "local_backend_uploads"
-        ),
+        "categorical_features":
+            len(
+                CATEGORICAL_FEATURES
+            ),
 
-        "content_optimization": (
+        "image_storage":
+            "local_backend_uploads",
+
+        "content_optimization":
             "enabled"
-        )
     })
 
 
@@ -1161,7 +1289,7 @@ def predict():
 
 
         # ====================================================
-        # 7. SAVE IMAGE PERMANENTLY
+        # 7. SAVE IMAGE
         # ====================================================
 
         saved_image = (
@@ -1170,7 +1298,7 @@ def predict():
 
 
         # ====================================================
-        # 8. IMAGE PATH FOR ML MODEL
+        # 8. IMAGE PATH FOR MODEL
         # ====================================================
 
         image_path = None
@@ -1284,7 +1412,7 @@ def predict():
 
 
         # ====================================================
-        # 11. VALIDATE FEATURES
+        # 11. VALIDATE FEATURE SHAPE
         # ====================================================
 
         if features.shape != (
@@ -1299,6 +1427,10 @@ def predict():
             )
 
 
+        # ====================================================
+        # 12. CHECK MISSING FEATURES
+        # ====================================================
+
         missing_features = [
 
             feature
@@ -1311,6 +1443,10 @@ def predict():
 
         ]
 
+
+        # ====================================================
+        # 13. CHECK UNEXPECTED FEATURES
+        # ====================================================
 
         unexpected_features = [
 
@@ -1348,7 +1484,7 @@ def predict():
 
 
         # ====================================================
-        # 12. EXACT PRODUCTION ORDER
+        # 14. EXACT PRODUCTION FEATURE ORDER
         # ====================================================
 
         features = features[
@@ -1356,16 +1492,31 @@ def predict():
         ]
 
 
+        # ====================================================
+        # 15. CHECK MISSING VALUES
+        # ====================================================
+
         if features.isna().sum().sum() > 0:
+
+            missing_value_columns = (
+                features.columns[
+                    features.isna().any()
+                ].tolist()
+            )
+
 
             raise ValueError(
                 "Feature vector contains "
-                "missing values."
+                "missing values in: "
+                +
+                ", ".join(
+                    missing_value_columns
+                )
             )
 
 
         # ====================================================
-        # 13. MODEL PREDICTION
+        # 16. MODEL PREDICTION
         # ====================================================
 
         prediction = MODEL.predict(
@@ -1379,7 +1530,7 @@ def predict():
 
 
         # ====================================================
-        # 14. PROBABILITIES
+        # 17. PREDICTION PROBABILITIES
         # ====================================================
 
         probabilities = {}
@@ -1397,9 +1548,22 @@ def predict():
             )
 
 
-            model_classes = (
-                MODEL.classes_
-            )
+            if hasattr(
+                MODEL,
+                "classes_"
+            ):
+
+                model_classes = (
+                    MODEL.classes_
+                )
+
+            else:
+
+                model_classes = [
+                    "High",
+                    "Low",
+                    "Medium"
+                ]
 
 
             for cls, probability in zip(
@@ -1415,7 +1579,7 @@ def predict():
 
 
         # ====================================================
-        # 15. CONFIDENCE
+        # 18. CONFIDENCE
         # ====================================================
 
         confidence = None
@@ -1429,7 +1593,7 @@ def predict():
 
 
         # ====================================================
-        # 16. INPUT SUMMARY
+        # 19. INPUT SUMMARY
         # ====================================================
 
         input_summary = {
@@ -1471,7 +1635,7 @@ def predict():
 
 
         # ====================================================
-        # 17. IMAGE RESPONSE INFORMATION
+        # 20. IMAGE RESPONSE
         # ====================================================
 
         image_response = {
@@ -1541,7 +1705,7 @@ def predict():
 
 
         # ====================================================
-        # 18. IMAGE ANALYSIS DATA FOR OPTIMIZER
+        # 21. IMAGE ANALYSIS DATA
         # ====================================================
 
         def get_feature_value(
@@ -1557,6 +1721,7 @@ def predict():
                         name
                     ]
 
+
                     try:
 
                         if pd.isna(value):
@@ -1567,44 +1732,52 @@ def predict():
 
                         pass
 
+
                     return value
+
 
             return default
 
 
-        image_brightness = get_feature_value(
-            [
-                "image_brightness",
-                "brightness",
-                "avg_brightness",
-                "image_avg_brightness"
-            ],
-            None
+        image_brightness = (
+            get_feature_value(
+                [
+                    "image_brightness",
+                    "brightness",
+                    "avg_brightness",
+                    "image_avg_brightness"
+                ],
+                None
+            )
         )
 
 
-        image_contrast = get_feature_value(
-            [
-                "image_contrast",
-                "contrast",
-                "image_avg_contrast"
-            ],
-            None
+        image_contrast = (
+            get_feature_value(
+                [
+                    "image_contrast",
+                    "contrast",
+                    "image_avg_contrast"
+                ],
+                None
+            )
         )
 
 
-        image_sharpness = get_feature_value(
-            [
-                "image_sharpness",
-                "sharpness",
-                "image_avg_sharpness"
-            ],
-            None
+        image_sharpness = (
+            get_feature_value(
+                [
+                    "image_sharpness",
+                    "sharpness",
+                    "image_avg_sharpness"
+                ],
+                None
+            )
         )
 
 
         # ====================================================
-        # 19. CONTENT OPTIMIZATION ENGINE
+        # 22. CONTENT OPTIMIZATION
         # ====================================================
 
         optimization = (
@@ -1648,7 +1821,7 @@ def predict():
 
 
         # ====================================================
-        # 20. RESPONSE
+        # 23. FINAL RESPONSE
         # ====================================================
 
         response = {
@@ -1682,13 +1855,11 @@ def predict():
 
 
         # ====================================================
-        # 21. LOG RESULT
+        # 24. LOG RESULT
         # ====================================================
 
-        print(
-            "\n✓ Prediction completed"
-        )
-
+        print()
+        print("✓ Prediction completed")
 
         print(
             f"  Prediction: "
@@ -1702,6 +1873,12 @@ def predict():
                 f"  Confidence: "
                 f"{confidence * 100:.2f}%"
             )
+
+
+        print(
+            f"  Features: "
+            f"{features.shape[1]}"
+        )
 
 
         print(
@@ -1732,7 +1909,7 @@ def predict():
     except Exception as error:
 
         # ====================================================
-        # CLEANUP IMAGE IF PREDICTION FAILED
+        # CLEANUP FAILED IMAGE
         # ====================================================
 
         if saved_image:
@@ -1764,12 +1941,15 @@ def predict():
                 )
 
                 print(
-                    cleanup_error
+                    repr(
+                        cleanup_error
+                    )
                 )
 
 
+        print()
         print(
-            "\nPREDICTION ERROR:"
+            "PREDICTION ERROR:"
         )
 
 
@@ -1819,111 +1999,89 @@ def request_entity_too_large(
 
 if __name__ == "__main__":
 
+    print()
+    print("=" * 70)
+    print("PRODUCTION SERVICE READY")
+    print("=" * 70)
+
+    print()
     print(
-        "\n" + "=" * 70
+        "AI INSTAGRAM PREDICTION API"
     )
-
-    print(
-        "PRODUCTION SERVICE READY"
-    )
-
-    print(
-        "=" * 70
-    )
-
-
-    print(
-        "\nAI INSTAGRAM PREDICTION API"
-    )
-
 
     print(
         f"Model: "
-        f"{type(MODEL).__name__}"
+        f"{METADATA.get('model_name', type(MODEL).__name__)}"
     )
 
+    print(
+        f"Model Type: "
+        f"{type(MODEL).__name__}"
+    )
 
     print(
         f"Features: "
         f"{len(PRODUCTION_FEATURES)}"
     )
 
-
     print(
         "API: "
         "http://127.0.0.1:5000"
     )
-
 
     print(
         "Image storage: "
         f"{UPLOAD_FOLDER}"
     )
 
-
     print(
         "Content optimization: ENABLED"
     )
-
 
     print(
         "Admin API: ENABLED"
     )
 
-
-    print(
-        "\nEndpoints:"
-    )
-
+    print()
+    print("Endpoints:")
 
     print(
         "GET  /api/health"
     )
 
-
     print(
         "GET  /api/model-info"
     )
-
 
     print(
         "POST /api/predict"
     )
 
-
     print(
         "GET  /uploads/<filename>"
     )
 
-
-    print(
-        "\nADMIN ENDPOINTS:"
-    )
-
+    print()
+    print("ADMIN ENDPOINTS:")
 
     print(
         "GET    /api/admin/health"
     )
 
-
     print(
         "GET    /api/admin/users"
     )
-
 
     print(
         "GET    /api/admin/users/<uid>"
     )
 
-
     print(
         "DELETE /api/admin/users/<uid>"
     )
 
-
-    print(
-        "=" * 70
-    )
+    print()
+    print("=" * 70)
 
 
     app.run(
