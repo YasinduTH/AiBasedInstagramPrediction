@@ -159,8 +159,8 @@ function AdminDashboard({ user }) {
               </p>
             </div>
             
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', flex: '1 1 auto', justifyContent: 'flex-end' }}>
+              <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: '350px' }}>
                 <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
@@ -168,13 +168,14 @@ function AdminDashboard({ user }) {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
                     padding: '0.5rem 0.5rem 0.5rem 2.5rem',
                     backgroundColor: 'var(--bg-primary)',
                     border: '1px solid var(--border-color)',
                     borderRadius: 'var(--radius-md)',
                     color: 'var(--text-primary)',
                     outline: 'none',
-                    minWidth: '250px'
                   }}
                 />
               </div>
@@ -297,7 +298,7 @@ function AdminDashboard({ user }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem', backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
               <div>
                 <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Date of Birth</p>
                 <p style={{ margin: 0, fontWeight: '500' }}>{selectedUser.dateOfBirth || "N/A"}</p>
